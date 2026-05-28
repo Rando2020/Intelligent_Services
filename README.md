@@ -1,10 +1,10 @@
 # Intelligent Services
 
-Intelligent Services is a framework for building AI-assisted operational systems that can understand business documentation, project lifecycles, SOPs, governance requirements, compliance constraints, execution readiness, and human review escalation.
+Intelligent Services is a framework for building AI-assisted operational systems that can understand business documentation, project lifecycles, SOPs, governance requirements, compliance constraints, execution readiness, human review escalation, and engineering data safety.
 
 ## Current Focus
 
-The first rule packs establish a data governance, compliance, SOP quality, and Legal/SME review foundation for agents that need to reason across:
+The first rule packs establish a data governance, compliance, SOP quality, Legal/SME review, and Data/Dev Engineering governance foundation for agents that need to reason across:
 
 - Strategy documents
 - SOPs and runbooks
@@ -12,6 +12,9 @@ The first rule packs establish a data governance, compliance, SOP quality, and L
 - Jira or ADO work items
 - Data maps and system dependencies
 - Contracts, SOWs, DPAs, BAAs, and vendor terms
+- Excel, CSV, SQL, database tables, views, and pipeline outputs
+- Data engineering lifecycle stages from intake through delivery and deletion
+- MOVEit, SFTP, API, and last-mile outbound file delivery controls
 - Access, vendor, privacy, security, and compliance evidence
 - Operational readiness and audit-readiness scoring
 - Human review routing when AI cannot safely determine an answer
@@ -33,7 +36,7 @@ The repository includes a baseline rule system for operational governance and re
 
 ## SOP Quality Scoring System
 
-The repository now includes a weighted 100-point SOP scoring model.
+The repository includes a weighted 100-point SOP scoring model.
 
 ### Rating Bands
 
@@ -109,16 +112,56 @@ The AI should not:
 | `LEGAL-TRIGGER-006` | Cross-border, offshore, or third-party access | Legal, Privacy, Security, Compliance |
 | `LEGAL-TRIGGER-007` | Risk acceptance required | Legal, Security, Compliance, Product Owner |
 
+## Data and Dev Engineering Governance Layer
+
+The repository includes a field-level and pipeline-level engineering control model for data submitted through Excel, CSV, SQL, database tables, views, extracts, and delivery files.
+
+### Engineering Rule Areas
+
+| Area | Purpose |
+|---|---|
+| Data input scoring | Rates whether submitted tabular data is safe, controlled, restricted, or blocked. |
+| Field-level classification | Classifies each column as public, internal, confidential, personal data, PHI, PCI, credential, secret, quasi-identifier, derived, aggregate, or free text. |
+| Obfuscation and minimization | Defines when to remove, mask, tokenize, hash, generalize, aggregate, or suppress data. |
+| Safe enrichment | Checks whether joins, derived fields, risk scores, flags, geocodes, or model features create new sensitivity. |
+| Pipeline lifecycle controls | Covers intake, extract, transform, validate, QA/UAT, release, delivery, archive, and deletion. |
+| Last-mile delivery controls | Treats MOVEit, SFTP, APIs, shared folders, file names, manifests, recipient lists, and route configs as governed control surfaces. |
+| SOC 2 readiness alignment | Maps engineering controls to security, availability, processing integrity, confidentiality, and privacy themes. |
+
+### Data Input Rating Bands
+
+| Score | Rating | Meaning |
+|---:|---|---|
+| 92 to 100 | Audit-ready input | Dataset is classified, minimized, controlled, validated, and safe for the approved purpose. |
+| 85 to 91 | Controlled input | Usable with normal controls, but minor evidence or documentation gaps remain. |
+| 75 to 84 | Conditional use | Use only with constraints, remediation, or supervised handling. |
+| 50 to 74 | Restricted or remediation required | Do not use broadly in development, testing, AI prompts, shared workspaces, or external delivery. |
+| 0 to 49 | Blocked | Uncontrolled sensitive data, unclear ownership, prohibited fields, or unsafe routing risk. |
+
+### Data / Dev Engineering Gate Caps
+
+| Gate | Score Cap |
+|---|---:|
+| Dataset is unclassified | 74 |
+| Sensitive data appears in unmanaged tool, prompt, ticket, screenshot, repo, or email | 49 |
+| Missing data owner or system owner | 69 |
+| No field minimization review | 79 |
+| External delivery lacks outbound controls | 69 |
+| Wrong-recipient or wrong-client routing risk | 59 |
+| Prohibited fields are present for intended use | 49 |
+
 ## Repository Structure
 
 ```text
 .
 ├── README.md
 ├── docs/
+│   ├── data_dev_engineering_governance_guide.md
 │   ├── data_governance_compliance_framework.md
 │   ├── legal_sme_review_guide.md
 │   └── sop_quality_scoring_guide.md
 ├── rules/
+│   ├── data_dev_engineering_rules.yaml
 │   ├── data_governance_rules.yaml
 │   ├── legal_sme_review_rules.yaml
 │   └── sop_quality_rules.yaml
@@ -128,7 +171,7 @@ The AI should not:
 
 ## How Agents Should Use These Rules
 
-Agents should not simply summarize documents. They should evaluate whether a workflow is governed, traceable, executable, audit-ready, and properly routed for human review where needed.
+Agents should not simply summarize documents. They should evaluate whether a workflow is governed, traceable, executable, audit-ready, engineering-safe, and properly routed for human review where needed.
 
 For each project or workflow, agents should ask:
 
@@ -144,6 +187,9 @@ For each project or workflow, agents should ask:
 10. What score, gate caps, and remediation actions apply?
 11. Is there any issue AI cannot safely decide?
 12. Which Legal, Privacy, Security, Compliance, Product, or SME reviewer should receive a review packet?
+13. Are submitted data fields classified and minimized?
+14. Can the data be safely tracked, enriched, transformed, logged, or delivered?
+15. Does the last-mile delivery layer prevent wrong-client or wrong-recipient release?
 
 ## Regulatory Overlay Logic
 
@@ -170,15 +216,16 @@ The system should enforce the following:
 - Contradictions across documents must be logged and resolved by an owner.
 - SOPs should receive a raw score, final gated score, rating band, and remediation backlog.
 - Legal/SME review packets should be generated for unresolved regulatory, contractual, privacy, security, operational, or risk acceptance questions.
+- Data submissions should receive field-level classification, safe-use determination, engineering score, and last-mile delivery review.
 
 ## Important Disclaimer
 
-This repository provides an operational governance framework. It does not provide legal advice and does not replace review by legal, privacy, security, compliance, product, or operational owners.
+This repository provides an operational governance framework. It does not provide legal advice and does not replace review by legal, privacy, security, compliance, product, architecture, data engineering, or operational owners.
 
 ## Next Recommended Builds
 
 - Add a SOC 2 and audit control mapping rule pack.
 - Add a project document ingestion workflow.
-- Add a contradiction detector for SOPs, Gantt charts, and Jira/ADO work items.
+- Add a contradiction detector for SOPs, Gantt charts, Jira/ADO work items, data maps, and delivery manifests.
 - Add example scorecards and review packets for healthcare, finance, retail, SaaS, and public sector workflows.
-- Add a lightweight CLI or script that reads an SOP and produces a structured scorecard plus Legal/SME review packet when needed.
+- Add a lightweight CLI or script that reads an SOP or dataset profile and produces a structured scorecard plus Legal/SME review packet when needed.
