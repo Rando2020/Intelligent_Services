@@ -1,0 +1,466 @@
+version: "0.1.0"
+last_updated: "2026-05-28"
+
+purpose: >
+  Defines the Legal and SME review layer for Intelligent Services. This rule pack routes
+  AI-identified governance, compliance, contract, privacy, security, and operational ambiguity
+  to the correct human reviewer with the exact project sections, evidence, and decision questions
+  needed for review.
+
+non_legal_advice_notice: >
+  AI can identify issues, route review packets, and summarize evidence. AI must not provide legal
+  conclusions, privileged advice, regulatory determinations, or final approval decisions.
+
+review_philosophy:
+  - id: LEGAL-PRINCIPLE-001
+    name: Human judgment layer
+    rule: >
+      When the AI cannot determine applicability, interpretation, contractual obligation, regulatory exposure,
+      or acceptable risk, it must create a structured review packet for Legal, Privacy, Security, Compliance,
+      or the relevant operational SME.
+
+  - id: LEGAL-PRINCIPLE-002
+    name: Review the specific source, not the whole project by default
+    rule: >
+      Review packets must point the reviewer to specific documents, sections, excerpts, workflow steps,
+      systems, data fields, vendors, clauses, or decision points rather than asking for broad review without focus.
+
+  - id: LEGAL-PRINCIPLE-003
+    name: Separate AI observation from human decision
+    rule: >
+      AI output must clearly label facts observed, assumptions, unresolved questions, recommended reviewer,
+      and requested decision. It must not blur an AI inference into an approved legal position.
+
+  - id: LEGAL-PRINCIPLE-004
+    name: Preserve privilege and sensitive data boundaries
+    rule: >
+      Review packets must not include unnecessary PHI, PCI, secrets, credentials, tokens, live sensitive data,
+      or privileged legal analysis. Use redacted excerpts and references when possible.
+
+reviewer_roles:
+  - id: REVIEWER-LEGAL
+    name: Legal Counsel
+    should_review:
+      - Contract interpretation
+      - Data processing terms
+      - Liability, indemnification, warranty, and limitation of liability language
+      - Regulatory applicability questions
+      - Cross-border data transfer obligations
+      - External-facing claims and marketing statements
+      - Legal hold, retention, subpoena, or litigation-related questions
+    should_not_be_used_for:
+      - Basic SOP formatting
+      - Purely technical implementation details with no legal or compliance ambiguity
+      - Operational preference decisions unless contractual or regulatory impact exists
+
+  - id: REVIEWER-PRIVACY
+    name: Privacy Officer or Data Protection SME
+    should_review:
+      - Personal data use, collection, disclosure, sharing, sale, profiling, or opt-out rights
+      - Consent, lawful basis, notice, and consumer rights workflows
+      - Data minimization and retention questions
+      - De-identification, anonymization, aggregation, or pseudonymization claims
+      - Data subject or consumer request processes
+    should_not_be_used_for:
+      - Non-personal operational data with no privacy impact
+
+  - id: REVIEWER-SECURITY
+    name: Security SME
+    should_review:
+      - Access controls
+      - Encryption and secure transfer methods
+      - Production system access
+      - Logging and monitoring
+      - Vulnerability, incident, or breach response triggers
+      - Secrets, credentials, tokens, or key management
+      - Vendor security controls
+    should_not_be_used_for:
+      - Pure business process wording unless it creates a security control gap
+
+  - id: REVIEWER-COMPLIANCE
+    name: Compliance Owner
+    should_review:
+      - HIPAA, PCI-DSS, SOC 2, audit evidence, control operation, policy adherence, and training requirements
+      - Evidence sufficiency and control ownership
+      - Regulated workflow readiness
+      - Audit response or remediation status
+    should_not_be_used_for:
+      - Contract negotiation unless paired with Legal
+
+  - id: REVIEWER-OPERATIONAL-SME
+    name: Operational SME
+    should_review:
+      - Whether the SOP accurately reflects how work is performed
+      - Whether tasks, handoffs, dependencies, timings, and roles are correct
+      - Whether the process is executable without tribal knowledge
+      - Whether Gantt timelines match real capacity and workflow constraints
+    should_not_be_used_for:
+      - Legal interpretation or regulatory approval
+
+  - id: REVIEWER-PRODUCT-OWNER
+    name: Product Owner or Business Owner
+    should_review:
+      - Business purpose
+      - Scope
+      - Product behavior
+      - Feature intent
+      - Customer-facing commitments
+      - Acceptance criteria
+      - Prioritization and risk acceptance routing
+    should_not_be_used_for:
+      - Final approval of legal or security risk without the appropriate reviewer
+
+review_triggers:
+  - id: LEGAL-TRIGGER-001
+    name: Regulatory applicability unclear
+    severity: critical
+    route_to: ["REVIEWER-LEGAL", "REVIEWER-PRIVACY", "REVIEWER-COMPLIANCE"]
+    applies_when:
+      - AI detects potential GDPR, CCPA/CPRA, HIPAA, PCI-DSS, or contractual controls but cannot determine applicability from available evidence.
+    review_focus:
+      - Data categories
+      - Jurisdictions
+      - Business purpose
+      - Contractual obligations
+      - Regulatory overlay triggers
+    required_packet_sections:
+      - project_summary
+      - data_classification_summary
+      - jurisdiction_and_customer_context
+      - relevant_source_excerpts
+      - ai_uncertainty_statement
+      - requested_decision
+    blocker_rule: >
+      Do not mark workflow compliant or audit-ready until the applicability decision is recorded.
+
+  - id: LEGAL-TRIGGER-002
+    name: External-facing claim or customer commitment
+    severity: high
+    route_to: ["REVIEWER-LEGAL", "REVIEWER-PRODUCT-OWNER", "REVIEWER-OPERATIONAL-SME"]
+    applies_when:
+      - A project includes claims about compliance, security, data protection, AI capability, clinical impact, reimbursement, financial impact, uptime, service levels, or guaranteed outcomes.
+    review_focus:
+      - Marketing copy
+      - Sales collateral
+      - SOW language
+      - Contract terms
+      - Website claims
+      - Customer emails
+      - Product descriptions
+    required_packet_sections:
+      - claim_text
+      - source_location
+      - evidence_supporting_claim
+      - risk_of_overstatement
+      - safer_alternative_language
+      - requested_decision
+    blocker_rule: >
+      Do not publish or send external-facing claims until approved or revised.
+
+  - id: LEGAL-TRIGGER-003
+    name: Contract, SOW, DPA, BAA, or vendor terms ambiguity
+    severity: critical
+    route_to: ["REVIEWER-LEGAL", "REVIEWER-PRIVACY", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    applies_when:
+      - Project execution depends on interpreting contract terms, SOW obligations, data processing addenda, BAAs, vendor security terms, SLAs, indemnity, audit rights, or data use restrictions.
+    review_focus:
+      - Contract clause
+      - Operational dependency
+      - Data sharing obligations
+      - Vendor responsibilities
+      - Acceptance criteria
+      - Liability or service commitment impact
+    required_packet_sections:
+      - contract_or_document_reference
+      - relevant_clause_excerpt_or_summary
+      - operational_decision_needed
+      - affected_workflow_or_sop_step
+      - risk_if_wrong
+      - requested_decision
+    blocker_rule: >
+      Do not proceed with external data sharing, production launch, or customer commitment if contract interpretation is unresolved.
+
+  - id: LEGAL-TRIGGER-004
+    name: Sensitive data handling ambiguity
+    severity: critical
+    route_to: ["REVIEWER-PRIVACY", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    applies_when:
+      - SOPs, tickets, files, prompts, screenshots, logs, or project artifacts may include PHI, PCI, credentials, secrets, sensitive personal data, or confidential customer data.
+    review_focus:
+      - Data minimization
+      - Redaction
+      - Access controls
+      - Secure storage
+      - Transfer method
+      - Logging and retention
+    required_packet_sections:
+      - data_elements_detected_or_suspected
+      - artifact_locations
+      - exposure_context
+      - access_path
+      - proposed_remediation
+      - requested_decision
+    blocker_rule: >
+      Immediately block copying, exporting, publishing, or sending artifacts containing suspected sensitive data until reviewed or redacted.
+
+  - id: LEGAL-TRIGGER-005
+    name: AI limitation or low-confidence classification
+    severity: medium
+    route_to: ["REVIEWER-OPERATIONAL-SME", "REVIEWER-PRIVACY", "REVIEWER-COMPLIANCE"]
+    applies_when:
+      - AI cannot determine whether a process step, data field, dependency, role, system, or control statement is accurate based on available documents.
+    review_focus:
+      - Source of truth
+      - Operational accuracy
+      - Data meaning
+      - System behavior
+      - Control evidence
+    required_packet_sections:
+      - ai_low_confidence_finding
+      - conflicting_or_missing_sources
+      - specific_question_for_sme
+      - impacted_score_or_gate
+      - requested_decision
+    blocker_rule: >
+      Mark the finding as unresolved. Do not convert unresolved inference into approved documentation.
+
+  - id: LEGAL-TRIGGER-006
+    name: Cross-border, offshore, or third-party access
+    severity: critical
+    route_to: ["REVIEWER-LEGAL", "REVIEWER-PRIVACY", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    applies_when:
+      - Governed data may be accessed, processed, stored, transmitted, or supported by offshore teams, vendors, subprocessors, external APIs, or cloud services.
+    review_focus:
+      - Jurisdiction
+      - Vendor role
+      - Subprocessor status
+      - Contract coverage
+      - Transfer mechanism
+      - Access logs
+      - Security controls
+    required_packet_sections:
+      - vendor_or_team_identity
+      - jurisdiction_or_location
+      - data_categories
+      - access_scope
+      - contract_or_security_review_reference
+      - requested_decision
+    blocker_rule: >
+      Do not permit governed data access until contractual, privacy, security, and compliance review status is documented.
+
+  - id: LEGAL-TRIGGER-007
+    name: Risk acceptance required
+    severity: high
+    route_to: ["REVIEWER-LEGAL", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE", "REVIEWER-PRODUCT-OWNER"]
+    applies_when:
+      - A project proposes a workaround, compensating control, delayed remediation, manual process, or exception to policy.
+    review_focus:
+      - Risk description
+      - Business justification
+      - Duration
+      - Compensating controls
+      - Approval authority
+      - Sunset date
+    required_packet_sections:
+      - risk_summary
+      - workaround_description
+      - compensating_controls
+      - duration_or_expiration
+      - accountable_risk_owner
+      - requested_decision
+    blocker_rule: >
+      Do not treat a workaround as approved until the authorized risk owner records acceptance and expiration.
+
+project_sections_for_review:
+  - id: SECTION-STRATEGY
+    name: Strategy and scope documents
+    reviewers: ["REVIEWER-LEGAL", "REVIEWER-PRODUCT-OWNER", "REVIEWER-OPERATIONAL-SME"]
+    legal_review_when:
+      - Business commitments affect contract obligations.
+      - Scope includes regulated data or external-facing claims.
+      - Project purpose may conflict with privacy notice, consent, or permitted use.
+    ai_should_extract:
+      - Scope statements
+      - Business purpose
+      - Assumptions
+      - Out-of-scope items
+      - Customer commitments
+      - Success metrics
+
+  - id: SECTION-DATA-MAP
+    name: Data inventory and flow map
+    reviewers: ["REVIEWER-PRIVACY", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    legal_review_when:
+      - Data category is unclear.
+      - Data moves across vendors, jurisdictions, or systems.
+      - Data is reused for a new purpose.
+      - Retention, deletion, or de-identification status is unclear.
+    ai_should_extract:
+      - Data elements
+      - Source systems
+      - Destination systems
+      - Data owners
+      - Recipients
+      - Retention rules
+      - Access roles
+
+  - id: SECTION-SOP
+    name: SOPs and runbooks
+    reviewers: ["REVIEWER-OPERATIONAL-SME", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    legal_review_when:
+      - SOP controls regulated data handling.
+      - SOP creates external delivery, access, disclosure, or customer-impacting decisions.
+      - SOP contradicts contract, policy, or regulatory expectations.
+    ai_should_extract:
+      - Trigger conditions
+      - Inputs and outputs
+      - Execution steps
+      - Exception paths
+      - Approval steps
+      - Evidence artifacts
+      - Prohibited behaviors
+
+  - id: SECTION-GANTT
+    name: Gantt charts and project plans
+    reviewers: ["REVIEWER-OPERATIONAL-SME", "REVIEWER-PRODUCT-OWNER", "REVIEWER-COMPLIANCE"]
+    legal_review_when:
+      - Timeline skips required review, testing, security, privacy, or contractual acceptance steps.
+      - Task sequencing creates risk of data sharing before approval.
+      - Resource constraints affect compliance obligations.
+    ai_should_extract:
+      - Milestones
+      - Dependencies
+      - Review gates
+      - External delivery dates
+      - Go-live dates
+      - Owners
+      - Critical path
+
+  - id: SECTION-CONTRACTS
+    name: Contracts, SOWs, DPAs, BAAs, vendor agreements
+    reviewers: ["REVIEWER-LEGAL", "REVIEWER-PRIVACY", "REVIEWER-SECURITY", "REVIEWER-COMPLIANCE"]
+    legal_review_when:
+      - Any interpretation affects workflow design, customer obligations, data rights, service levels, liability, or vendor access.
+    ai_should_extract:
+      - Relevant clause summaries
+      - Data processing language
+      - Service commitments
+      - Acceptance criteria
+      - Audit rights
+      - Confidentiality terms
+      - Security addenda
+      - Termination/offboarding terms
+
+  - id: SECTION-TICKETS
+    name: Jira, ADO, and implementation tickets
+    reviewers: ["REVIEWER-OPERATIONAL-SME", "REVIEWER-COMPLIANCE", "REVIEWER-SECURITY"]
+    legal_review_when:
+      - Ticket requests change regulated workflow behavior.
+      - Ticket includes sensitive data.
+      - Ticket acceptance criteria conflict with SOP, contract, or control requirements.
+    ai_should_extract:
+      - User story
+      - Acceptance criteria
+      - Linked SOPs
+      - Data fields
+      - Deployment or delivery steps
+      - Comments indicating exceptions or uncertainty
+
+legal_review_packet_requirements:
+  required_fields:
+    - packet_id
+    - project_name
+    - review_trigger_ids
+    - recommended_reviewers
+    - business_context
+    - lifecycle_phase
+    - documents_or_artifacts_reviewed
+    - specific_sections_for_review
+    - source_excerpt_or_summary
+    - ai_observation
+    - ai_confidence_level
+    - unresolved_assumptions
+    - risk_if_wrong
+    - requested_decision
+    - decision_options
+    - due_date_or_project_dependency
+    - sensitive_data_redaction_status
+    - final_decision_log
+
+  confidence_levels:
+    - id: HIGH
+      meaning: AI has enough evidence to classify the issue but still may route for approval if policy requires it.
+    - id: MEDIUM
+      meaning: AI has partial evidence but needs human confirmation before relying on the finding.
+    - id: LOW
+      meaning: AI cannot determine the answer from available documents and must route to SME or Legal.
+
+  decision_statuses:
+    - pending_review
+    - approved
+    - approved_with_conditions
+    - rejected
+    - needs_more_information
+    - escalated
+    - superseded
+
+agent_must_not:
+  - Provide legal advice or final legal conclusions.
+  - Mark a regulatory overlay as resolved when applicability is unclear.
+  - Hide unresolved assumptions inside polished language.
+  - Send entire contracts or sensitive records for broad review when a specific clause or excerpt would be sufficient.
+  - Include unnecessary PHI, PCI, secrets, credentials, or sensitive personal data in review packets.
+  - Treat Legal review as a replacement for Privacy, Security, Compliance, or Operational SME review when those reviewers are more appropriate.
+
+agent_must_do:
+  - Identify the specific project section that needs human review.
+  - Identify why AI cannot safely decide the issue.
+  - Route to the minimum necessary reviewer set.
+  - Provide exact review questions and decision options.
+  - Show the risk if the decision is wrong.
+  - Track final decision, conditions, owner, and date.
+  - Link the final decision back to impacted SOPs, Gantt tasks, tickets, contracts, and rule scores.
+
+standard_output_template: |
+  ## Legal / SME Review Packet
+
+  ### Review Summary
+  - Packet ID:
+  - Project:
+  - Lifecycle phase:
+  - Trigger IDs:
+  - Recommended reviewers:
+  - Due date or blocking milestone:
+  - Sensitive data redaction status:
+
+  ### Why Human Review Is Needed
+  - AI observation:
+  - AI confidence:
+  - Unresolved assumption:
+  - Risk if wrong:
+
+  ### Specific Sections to Review
+  | Artifact | Section / Location | Why It Matters | Extracted Summary or Redacted Excerpt |
+  |---|---|---|---|
+
+  ### Decision Needed
+  - Question for reviewer:
+  - Decision options:
+    1.
+    2.
+    3.
+  - Recommended owner:
+
+  ### Impacted Work
+  | Item | Impact |
+  |---|---|
+  | SOPs | |
+  | Gantt / Project Plan | |
+  | Jira / ADO Tickets | |
+  | Data Map | |
+  | Vendor / Contract | |
+  | SOP Score / Gate | |
+
+  ### Final Decision Log
+  | Reviewer | Decision | Conditions | Date | Follow-up Action |
+  |---|---|---|---|---|
