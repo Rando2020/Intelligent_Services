@@ -1,0 +1,559 @@
+version: "0.1.0"
+last_updated: "2026-05-28"
+
+purpose: >
+  Defines the baseline governance, compliance, lifecycle, and documentation rules
+  that Intelligent Services agents must use when analyzing, creating, or auditing
+  company operational frameworks.
+
+non_legal_advice_notice: >
+  These rules are an operational governance framework and do not replace legal,
+  security, privacy, or compliance counsel review.
+
+governance_principles:
+  - id: GOV-001
+    name: Classify data before action
+    rule: >
+      Before recommending storage, processing, sharing, retention, automation, or
+      integration patterns, classify the data by sensitivity, jurisdiction, industry,
+      source system, owner, and intended use.
+    rationale: Prevents agents from treating PHI, PCI, personal data, or confidential business data as generic project data.
+
+  - id: GOV-002
+    name: Apply least privilege by default
+    rule: >
+      Access should be limited to the minimum people, systems, roles, and time period
+      required to perform the approved business purpose.
+    rationale: Reduces exposure risk and supports auditability.
+
+  - id: GOV-003
+    name: Maintain traceability from strategy to execution
+    rule: >
+      Every operational artifact should trace from business objective to project plan,
+      SOP, system workflow, control requirement, owner, and evidence.
+    rationale: Enables audit-ready documentation and prevents disconnected process design.
+
+  - id: GOV-004
+    name: Use privacy and security by design
+    rule: >
+      Controls must be designed into workflows during initiation and planning, not added
+      only after execution begins.
+    rationale: Prevents expensive rework and uncontrolled data movement.
+
+  - id: GOV-005
+    name: Treat vendors and integrations as part of the control boundary
+    rule: >
+      Any vendor, cloud service, API, data processor, file exchange, or third-party tool
+      that stores, receives, processes, transmits, or can access governed data must be
+      included in risk assessment and evidence collection.
+    rationale: Prevents unmanaged third-party exposure.
+
+data_categories:
+  - id: DATA-PERSONAL
+    name: Personal Data
+    description: Data that identifies, relates to, describes, or can reasonably be linked to an individual or household.
+    examples: ["name", "email", "phone", "address", "device ID", "IP address", "account ID"]
+    default_controls: ["CTRL-DATA-MAP", "CTRL-CONSENT", "CTRL-ACCESS", "CTRL-RETENTION"]
+
+  - id: DATA-PHI
+    name: Protected Health Information
+    description: Individually identifiable health information handled by covered entities or business associates.
+    examples: ["member ID", "patient name", "diagnosis", "medication", "claim", "eligibility", "lab value"]
+    default_controls: ["CTRL-DATA-MAP", "CTRL-ACCESS", "CTRL-ENCRYPTION", "CTRL-AUDIT-LOG", "CTRL-BAA"]
+
+  - id: DATA-PCI
+    name: Payment Card Data
+    description: Cardholder data or sensitive authentication data used in payment card environments.
+    examples: ["PAN", "cardholder name", "expiration date", "service code", "CVV", "payment token"]
+    default_controls: ["CTRL-DATA-MAP", "CTRL-ACCESS", "CTRL-ENCRYPTION", "CTRL-PCI-SCOPE"]
+
+  - id: DATA-CONFIDENTIAL
+    name: Confidential Business Data
+    description: Internal company data that may create business, contractual, security, or reputational risk if exposed.
+    examples: ["pricing", "contracts", "strategy decks", "roadmaps", "SOWs", "implementation plans"]
+    default_controls: ["CTRL-ACCESS", "CTRL-RETENTION", "CTRL-DOC-SOURCE-OF-TRUTH"]
+
+project_lifecycle_phases:
+  initiation:
+    description: Define scope, objectives, risk class, stakeholders, and regulatory exposure before execution begins.
+    required_documents:
+      - strategy_document
+      - data_classification_summary
+      - stakeholder_map
+      - initial_risk_assessment
+    governance_checks:
+      - Confirm the business purpose for data use.
+      - Identify whether GDPR, CCPA, HIPAA, PCI-DSS, contractual, or geography-specific overlays may apply.
+      - Identify data owner, system owner, process owner, and compliance reviewer.
+
+  planning:
+    description: Convert approved scope into milestones, dependencies, SOP requirements, and control evidence requirements.
+    required_documents:
+      - gantt_chart_or_project_plan
+      - dependency_map
+      - sop_linkage_matrix
+      - security_and_privacy_control_plan
+    governance_checks:
+      - Link each major Gantt task to an SOP, runbook, or policy.
+      - Confirm task durations match resource capacity and review requirements.
+      - Confirm vendor, integration, file exchange, and access requirements are documented.
+
+  execution:
+    description: Follow approved SOPs, collect evidence, and manage change requests during delivery.
+    required_documents:
+      - active_sops
+      - implementation_runbook
+      - access_approval_records
+      - test_or_qa_evidence
+      - change_log
+    governance_checks:
+      - Confirm teams are using the active version of each SOP.
+      - Record deviations from standard process with owner, reason, date, and approval.
+      - Validate that operational steps match approved regulatory controls.
+
+  monitoring_and_control:
+    description: Audit execution against plan, detect contradictions, and update risk posture.
+    required_documents:
+      - audit_log_review
+      - issue_risk_decision_log
+      - compliance_checklist
+      - evidence_repository_index
+    governance_checks:
+      - Cross-reference SOPs, strategy documents, project plans, HR capacity, and compliance requirements for contradictions.
+      - Escalate unresolved contradictions before go-live or external delivery.
+      - Verify that controls remain effective after scope, data source, vendor, or timeline changes.
+
+  closure:
+    description: Confirm acceptance, archive superseded artifacts, document lessons learned, and retain evidence.
+    required_documents:
+      - final_acceptance_record
+      - archive_manifest
+      - retention_and_disposal_record
+      - lessons_learned
+    governance_checks:
+      - Archive outdated documentation and mark it as superseded.
+      - Confirm evidence is retained according to policy, contract, and regulation.
+      - Assign ongoing ownership for maintenance after project closure.
+
+controls:
+  - id: CTRL-DATA-MAP
+    domain: data_lifecycle_management
+    name: Data inventory and flow map
+    severity: critical
+    applies_when:
+      - Any project collects, receives, creates, transforms, stores, sends, or deletes governed data.
+    rule: >
+      Maintain an inventory of data elements, sources, destinations, systems, file exchanges,
+      owners, retention rules, access roles, and downstream consumers.
+    required_evidence:
+      - data_inventory
+      - data_flow_diagram
+      - system_owner_record
+      - access_role_matrix
+    automation_check: Flag missing data source, destination, owner, retention, or access role fields.
+    failure_response: Block production deployment or external delivery until the data map is complete.
+    maps_to: ["GDPR", "CCPA", "HIPAA", "PCI-DSS"]
+
+  - id: CTRL-CONSENT
+    domain: privacy
+    name: Consent and lawful basis tracking
+    severity: high
+    applies_when:
+      - Personal data is collected directly from individuals.
+      - Personal data is repurposed for a new use.
+      - Marketing, communication, profiling, or analytics use is proposed.
+    rule: >
+      Track the lawful basis, consent status, opt-out rights, notice language, collection point,
+      and permitted use before processing personal data.
+    required_evidence:
+      - consent_capture_record
+      - privacy_notice_reference
+      - lawful_basis_or_processing_purpose
+      - opt_out_or_preference_record
+    automation_check: Flag use of personal data where consent, lawful basis, or opt-out state is unknown.
+    failure_response: Pause processing until privacy owner approves the use case.
+    maps_to: ["GDPR", "CCPA"]
+
+  - id: CTRL-ACCESS
+    domain: security
+    name: Role-based access control
+    severity: critical
+    applies_when:
+      - Any governed, confidential, personal, PHI, or PCI data is accessible to users, agents, vendors, or systems.
+    rule: >
+      Grant access through approved roles, require documented approval, review access periodically,
+      and remove access when business need ends.
+    required_evidence:
+      - role_access_matrix
+      - approval_ticket_or_record
+      - access_review_log
+      - termination_or_deprovisioning_record
+    automation_check: Flag users, agents, service accounts, or vendors with access but no owner, role, approval, or review date.
+    failure_response: Escalate to system owner and security reviewer.
+    maps_to: ["GDPR", "CCPA", "HIPAA", "PCI-DSS"]
+
+  - id: CTRL-ENCRYPTION
+    domain: security
+    name: Encryption and secure transmission
+    severity: critical
+    applies_when:
+      - Governed data is stored, transmitted, exchanged, exported, or backed up.
+    rule: >
+      Use approved encryption for data at rest and in transit. Prohibit unencrypted external
+      file delivery, uncontrolled shared drives, personal email transfer, or unmanaged exports.
+    required_evidence:
+      - encryption_standard_reference
+      - transmission_method_record
+      - key_management_owner
+      - secure_file_exchange_configuration
+    automation_check: Flag file exchanges or storage locations without approved encryption or transfer protocol.
+    failure_response: Block transfer until secure transmission is implemented.
+    maps_to: ["HIPAA", "PCI-DSS", "GDPR"]
+
+  - id: CTRL-AUDIT-LOG
+    domain: monitoring
+    name: Audit logging and monitoring
+    severity: high
+    applies_when:
+      - Users, systems, agents, vendors, or service accounts access governed data or make production changes.
+    rule: >
+      Maintain logs showing who accessed or changed governed data, what changed, when it changed,
+      and whether the action was approved.
+    required_evidence:
+      - audit_log_location
+      - log_retention_policy
+      - access_or_change_review_record
+      - exception_report
+    automation_check: Flag production changes or data access events without traceable actor, timestamp, and approval context.
+    failure_response: Escalate for security and compliance review.
+    maps_to: ["HIPAA", "PCI-DSS", "GDPR"]
+
+  - id: CTRL-RETENTION
+    domain: data_lifecycle_management
+    name: Retention and disposal
+    severity: high
+    applies_when:
+      - Governed data or compliance evidence is stored beyond immediate processing.
+    rule: >
+      Define retention period, archive rules, legal hold conditions, disposal method, and owner
+      for each governed dataset and operational artifact.
+    required_evidence:
+      - retention_schedule
+      - archive_manifest
+      - disposal_record
+      - legal_hold_review
+    automation_check: Flag datasets or documents without retention owner, retention duration, or disposal method.
+    failure_response: Assign owner and retention rule before project closure.
+    maps_to: ["GDPR", "CCPA", "HIPAA", "PCI-DSS"]
+
+  - id: CTRL-POLICY-TRAINING
+    domain: compliance_program
+    name: Policies and training
+    severity: medium
+    applies_when:
+      - A team handles governed data or executes regulated workflows.
+    rule: >
+      Maintain written procedures and confirm team members are trained on responsible data handling,
+      reporting obligations, escalation paths, and SOP execution.
+    required_evidence:
+      - policy_reference
+      - training_completion_record
+      - sop_acknowledgement
+      - escalation_contact_list
+    automation_check: Flag project roles assigned to governed data workflows without current training evidence.
+    failure_response: Require training completion or compensating control before access is granted.
+    maps_to: ["GDPR", "CCPA", "HIPAA", "PCI-DSS"]
+
+  - id: CTRL-VENDOR-RISK
+    domain: third_party_risk
+    name: Third-party and vendor risk management
+    severity: critical
+    applies_when:
+      - A vendor, contractor, cloud tool, API, file exchange partner, processor, or subprocessor receives or can access governed data.
+    rule: >
+      Document vendor role, data access, contract status, security review, regulatory obligations,
+      subprocessors, incident notification expectations, and offboarding requirements.
+    required_evidence:
+      - vendor_inventory_entry
+      - contract_or_dpa_or_baa_reference
+      - security_review_record
+      - data_access_scope
+      - offboarding_plan
+    automation_check: Flag vendors or integrations with governed data access but no contract/security review reference.
+    failure_response: Block production data sharing until vendor risk review is complete.
+    maps_to: ["GDPR", "CCPA", "HIPAA", "PCI-DSS"]
+
+  - id: CTRL-BAA
+    domain: healthcare_compliance
+    name: Business Associate Agreement check
+    severity: critical
+    applies_when:
+      - A vendor, partner, agent, or service provider creates, receives, maintains, or transmits PHI for a covered entity or business associate.
+    rule: >
+      Confirm an executed BAA or approved contractual equivalent exists before PHI is shared or processed.
+    required_evidence:
+      - baa_reference
+      - covered_entity_or_business_associate_status
+      - phi_use_description
+      - minimum_necessary_review
+    automation_check: Flag PHI workflows involving third parties without a BAA reference.
+    failure_response: Block PHI transfer until compliance/legal confirms authorization.
+    maps_to: ["HIPAA"]
+
+  - id: CTRL-PCI-SCOPE
+    domain: payment_security
+    name: PCI scope isolation
+    severity: critical
+    applies_when:
+      - Payment card data is collected, processed, stored, transmitted, tokenized, or visible in logs/screenshots.
+    rule: >
+      Identify cardholder data environment scope, reduce storage of cardholder data, prevent sensitive authentication data retention,
+      and isolate PCI systems from non-PCI systems where possible.
+    required_evidence:
+      - pci_scope_diagram
+      - card_data_inventory
+      - tokenization_or_masking_record
+      - payment_processor_contract_reference
+    automation_check: Flag card data fields, logs, exports, screenshots, or database tables outside approved PCI scope.
+    failure_response: Stop processing and escalate to payment security owner.
+    maps_to: ["PCI-DSS"]
+
+  - id: CTRL-DOC-SOURCE-OF-TRUTH
+    domain: documentation_governance
+    name: Single source of truth
+    severity: high
+    applies_when:
+      - Multiple strategy docs, SOPs, Gantt charts, runbooks, tickets, or policies describe the same workflow.
+    rule: >
+      Store active documents in a centralized searchable knowledge base, mark owners, track versions,
+      archive outdated versions, and link dependent artifacts.
+    required_evidence:
+      - canonical_document_link
+      - document_owner
+      - version_history
+      - archive_location
+    automation_check: Flag duplicate active documents, missing owners, stale versions, or conflicting instructions.
+    failure_response: Require owner decision on canonical source before execution continues.
+    maps_to: ["Internal Governance"]
+
+regulatory_overlays:
+  GDPR:
+    name: General Data Protection Regulation
+    summary: Applies to processing personal data of individuals in the European Union or European Economic Area when jurisdictional criteria are met.
+    trigger_conditions:
+      - Data subject is located in the EU or EEA.
+      - Organization offers goods or services to EU or EEA individuals.
+      - Organization monitors behavior of EU or EEA individuals.
+      - Personal data is transferred from EU or EEA contexts.
+    required_controls:
+      - CTRL-DATA-MAP
+      - CTRL-CONSENT
+      - CTRL-ACCESS
+      - CTRL-ENCRYPTION
+      - CTRL-AUDIT-LOG
+      - CTRL-RETENTION
+      - CTRL-VENDOR-RISK
+    required_artifacts:
+      - record_of_processing_activity
+      - lawful_basis_assessment
+      - data_subject_rights_process
+      - transfer_impact_or_cross_border_review_when_applicable
+    prohibited_assumptions:
+      - Do not assume consent is always the correct lawful basis.
+      - Do not assume anonymized, pseudonymized, aggregated, or de-identified data is out of scope without review.
+      - Do not assume US-hosted systems are acceptable without transfer review when EU/EEA personal data is involved.
+    escalation_conditions:
+      - Special category data is involved.
+      - Automated decision-making or profiling is proposed.
+      - Cross-border transfer, processor/subprocessor, or high-risk processing is proposed.
+
+  CCPA:
+    name: California Consumer Privacy Act and California Privacy Rights Act amendments
+    summary: Applies to qualifying businesses handling personal information of California residents.
+    trigger_conditions:
+      - California resident personal information is collected, sold, shared, disclosed, or used.
+      - Consumer rights, privacy notice, opt-out, deletion, correction, or data access request workflows are needed.
+      - Vendor acts as service provider, contractor, or third party for California personal information.
+    required_controls:
+      - CTRL-DATA-MAP
+      - CTRL-CONSENT
+      - CTRL-ACCESS
+      - CTRL-RETENTION
+      - CTRL-VENDOR-RISK
+      - CTRL-DOC-SOURCE-OF-TRUTH
+    required_artifacts:
+      - california_privacy_notice_reference
+      - consumer_rights_request_process
+      - opt_out_or_preference_process
+      - service_provider_or_contract_review
+    prohibited_assumptions:
+      - Do not assume all organizations are subject to CCPA without checking threshold and applicability.
+      - Do not assume de-identified or aggregated data is exempt without confirming definition and controls.
+      - Do not assume sharing data with adtech or analytics tools is low risk.
+    escalation_conditions:
+      - Sale or sharing of personal information may occur.
+      - Sensitive personal information is involved.
+      - Consumer rights request process is missing or manual-only.
+
+  HIPAA:
+    name: Health Insurance Portability and Accountability Act
+    summary: Applies to covered entities and business associates handling protected health information in the United States.
+    trigger_conditions:
+      - PHI is created, received, maintained, transmitted, viewed, or transformed.
+      - Healthcare provider, payer, clearinghouse, business associate, or subcontractor workflow is involved.
+      - Claims, eligibility, medication, lab, encounter, patient, or member data is used.
+    required_controls:
+      - CTRL-DATA-MAP
+      - CTRL-ACCESS
+      - CTRL-ENCRYPTION
+      - CTRL-AUDIT-LOG
+      - CTRL-RETENTION
+      - CTRL-POLICY-TRAINING
+      - CTRL-VENDOR-RISK
+      - CTRL-BAA
+    required_artifacts:
+      - phi_data_inventory
+      - minimum_necessary_review
+      - baa_reference_when_third_party_involved
+      - access_log_review
+      - incident_escalation_process
+    prohibited_assumptions:
+      - Do not assume healthcare-adjacent data is non-PHI without classification review.
+      - Do not assume vendor access is acceptable without BAA and minimum necessary review.
+      - Do not put PHI in prompts, logs, screenshots, tickets, or public repositories.
+    escalation_conditions:
+      - PHI may have been sent to the wrong recipient.
+      - Offshore or third-party access to PHI is proposed or detected.
+      - PHI appears in logs, screenshots, issue trackers, email threads, or public artifacts.
+
+  PCI-DSS:
+    name: Payment Card Industry Data Security Standard
+    summary: Applies to organizations that store, process, transmit, or can affect the security of payment card data.
+    trigger_conditions:
+      - Cardholder data or sensitive authentication data is collected, stored, processed, transmitted, or logged.
+      - Payment processor, payment form, billing workflow, refund workflow, or payment API is in scope.
+      - Systems can affect security of the cardholder data environment.
+    required_controls:
+      - CTRL-DATA-MAP
+      - CTRL-ACCESS
+      - CTRL-ENCRYPTION
+      - CTRL-AUDIT-LOG
+      - CTRL-RETENTION
+      - CTRL-VENDOR-RISK
+      - CTRL-PCI-SCOPE
+    required_artifacts:
+      - pci_scope_diagram
+      - cardholder_data_inventory
+      - network_or_system_segmentation_record
+      - payment_processor_or_gateway_contract_reference
+      - masking_or_tokenization_evidence
+    prohibited_assumptions:
+      - Do not store sensitive authentication data after authorization.
+      - Do not place PAN, CVV, or full card data in tickets, logs, prompts, screenshots, or spreadsheets.
+      - Do not assume third-party payment tooling removes all PCI obligations.
+    escalation_conditions:
+      - Card data appears outside the approved payment flow.
+      - Logs or exports contain cardholder data.
+      - Payment workflow changes without PCI scope review.
+
+document_governance_rules:
+  - id: DOC-001
+    name: Map documents to lifecycle phase
+    rule: >
+      Strategy documents belong to initiation, Gantt charts and dependency maps belong to planning,
+      SOPs and runbooks belong to execution, audit logs and issue records belong to monitoring,
+      and archive/retention records belong to closure.
+    required_evidence:
+      - document_type
+      - lifecycle_phase
+      - owner
+      - last_reviewed_date
+    automation_check: Flag documents missing lifecycle phase, owner, or review date.
+
+  - id: DOC-002
+    name: Link project tasks to SOPs
+    rule: >
+      Each Gantt task, Jira issue, ADO work item, or implementation milestone must link to the SOP,
+      runbook, policy, or decision record that governs the work.
+    required_evidence:
+      - task_id
+      - sop_or_runbook_link
+      - owner
+      - dependency_reference
+    automation_check: Flag execution-phase tasks without SOP or runbook link.
+
+  - id: DOC-003
+    name: Cross-reference for contradictions
+    rule: >
+      When documents describe the same workflow, compare them for contradictions in ownership,
+      timing, system names, file names, access, approval steps, regulatory requirements, and handoffs.
+    required_evidence:
+      - contradiction_log
+      - decision_owner
+      - resolution_date
+      - updated_source_of_truth
+    automation_check: Flag mismatched dates, owners, file paths, systems, or approval steps across active documents.
+
+  - id: DOC-004
+    name: Version and archive control
+    rule: >
+      Active documents must have a version, owner, approval state, and effective date. Superseded documents
+      must be archived and clearly marked as inactive.
+    required_evidence:
+      - version_history
+      - approval_state
+      - archive_location
+      - effective_date
+    automation_check: Flag duplicate active documents or documents without version and approval state.
+
+  - id: DOC-005
+    name: Change impact propagation
+    rule: >
+      If an SOP, regulation, vendor workflow, file layout, integration, system dependency, or staffing capacity changes,
+      update affected project timelines, risks, tickets, test plans, and training materials.
+    required_evidence:
+      - change_log
+      - impacted_artifacts
+      - owner_approval
+      - updated_timeline_or_risk_record
+    automation_check: Flag SOP changes without corresponding downstream artifact review.
+
+agent_evaluation_contract:
+  required_agent_questions:
+    - What data categories are involved?
+    - Which geography, industry, client, vendor, and system context applies?
+    - What is the business purpose and approved use?
+    - What regulations or contractual controls may be triggered?
+    - What documents govern the lifecycle phase of this work?
+    - What evidence proves the control is operating?
+    - Who owns the decision, system, process, and documentation?
+  must_not_do:
+    - Do not provide legal conclusions.
+    - Do not assume a regulation applies only because an industry keyword appears.
+    - Do not assume a regulation does not apply because the project is internal.
+    - Do not recommend moving governed data into unmanaged tools.
+    - Do not create or request PHI, PCI, secrets, credentials, or sensitive personal data in public repositories or prompts.
+  output_requirements:
+    - Include rule IDs when evaluating compliance.
+    - Separate baseline governance controls from regulatory overlays.
+    - Identify missing evidence before claiming compliance.
+    - Mark unresolved assumptions explicitly.
+    - Recommend escalation when legal, privacy, security, or compliance ownership is required.
+
+source_references:
+  - id: SRC-GDPR-EC
+    name: European Commission GDPR overview
+    url: "https://commission.europa.eu/law/law-topic/data-protection/data-protection-eu_en"
+    notes: Official EU source for GDPR context.
+  - id: SRC-CCPA-CPPA
+    name: California Privacy Protection Agency CCPA resources
+    url: "https://cppa.ca.gov/regulations/"
+    notes: Official California privacy agency regulations resource.
+  - id: SRC-HIPAA-HHS
+    name: HHS HIPAA for Professionals
+    url: "https://www.hhs.gov/hipaa/for-professionals/index.html"
+    notes: Official HHS HIPAA Privacy, Security, and Breach Notification resource.
+  - id: SRC-PCI-DSS
+    name: PCI Security Standards Council Document Library
+    url: "https://www.pcisecuritystandards.org/document_library/"
+    notes: Official PCI SSC source for PCI DSS documentation.
