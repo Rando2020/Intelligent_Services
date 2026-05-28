@@ -1,18 +1,20 @@
 # Intelligent Services
 
-Intelligent Services is a framework for building AI-assisted operational systems that can understand business documentation, project lifecycles, SOPs, governance requirements, compliance constraints, and execution readiness.
+Intelligent Services is a framework for building AI-assisted operational systems that can understand business documentation, project lifecycles, SOPs, governance requirements, compliance constraints, execution readiness, and human review escalation.
 
 ## Current Focus
 
-The first rule packs establish a data governance, compliance, and SOP quality foundation for agents that need to reason across:
+The first rule packs establish a data governance, compliance, SOP quality, and Legal/SME review foundation for agents that need to reason across:
 
 - Strategy documents
 - SOPs and runbooks
 - Gantt charts and project plans
 - Jira or ADO work items
 - Data maps and system dependencies
+- Contracts, SOWs, DPAs, BAAs, and vendor terms
 - Access, vendor, privacy, security, and compliance evidence
 - Operational readiness and audit-readiness scoring
+- Human review routing when AI cannot safely determine an answer
 
 ## Data Governance Rule Pack
 
@@ -72,6 +74,41 @@ Some findings cap the final score even when the raw score is high.
 | Missing exception or failure path | 79 |
 | SOP exposes PHI, PCI, secrets, credentials, tokens, or sensitive records | 49 |
 
+## Legal and SME Review Layer
+
+The repository includes a human review routing layer for situations where AI rules can detect risk, but should not make the final decision.
+
+### Review Philosophy
+
+The AI should:
+
+- Identify the specific project section that requires human judgment.
+- Explain why the AI cannot safely determine the answer.
+- Route to the minimum necessary reviewers.
+- Provide exact decision questions and options.
+- Redact sensitive data where possible.
+- Track the final decision back to impacted SOPs, tickets, project plans, contracts, data maps, and scores.
+
+The AI should not:
+
+- Provide legal advice.
+- Mark unclear regulatory applicability as resolved.
+- Hide unresolved assumptions inside polished language.
+- Send broad, unfocused review requests when a specific excerpt or section is enough.
+- Include unnecessary PHI, PCI, secrets, credentials, or sensitive records in review packets.
+
+### Review Triggers
+
+| Trigger ID | Trigger | Default Reviewers |
+|---|---|---|
+| `LEGAL-TRIGGER-001` | Regulatory applicability unclear | Legal, Privacy, Compliance |
+| `LEGAL-TRIGGER-002` | External-facing claim or customer commitment | Legal, Product Owner, Operational SME |
+| `LEGAL-TRIGGER-003` | Contract, SOW, DPA, BAA, or vendor terms ambiguity | Legal, Privacy, Security, Compliance |
+| `LEGAL-TRIGGER-004` | Sensitive data handling ambiguity | Privacy, Security, Compliance |
+| `LEGAL-TRIGGER-005` | AI limitation or low-confidence classification | Operational SME, Privacy, Compliance |
+| `LEGAL-TRIGGER-006` | Cross-border, offshore, or third-party access | Legal, Privacy, Security, Compliance |
+| `LEGAL-TRIGGER-007` | Risk acceptance required | Legal, Security, Compliance, Product Owner |
+
 ## Repository Structure
 
 ```text
@@ -79,9 +116,11 @@ Some findings cap the final score even when the raw score is high.
 ├── README.md
 ├── docs/
 │   ├── data_governance_compliance_framework.md
+│   ├── legal_sme_review_guide.md
 │   └── sop_quality_scoring_guide.md
 ├── rules/
 │   ├── data_governance_rules.yaml
+│   ├── legal_sme_review_rules.yaml
 │   └── sop_quality_rules.yaml
 └── schemas/
     └── governance_rule.schema.json
@@ -89,7 +128,7 @@ Some findings cap the final score even when the raw score is high.
 
 ## How Agents Should Use These Rules
 
-Agents should not simply summarize documents. They should evaluate whether a workflow is governed, traceable, executable, and audit-ready.
+Agents should not simply summarize documents. They should evaluate whether a workflow is governed, traceable, executable, audit-ready, and properly routed for human review where needed.
 
 For each project or workflow, agents should ask:
 
@@ -103,6 +142,8 @@ For each project or workflow, agents should ask:
 8. Is the SOP executable without tribal knowledge?
 9. Does the SOP define failure handling, validation, and audit evidence?
 10. What score, gate caps, and remediation actions apply?
+11. Is there any issue AI cannot safely decide?
+12. Which Legal, Privacy, Security, Compliance, Product, or SME reviewer should receive a review packet?
 
 ## Regulatory Overlay Logic
 
@@ -128,15 +169,16 @@ The system should enforce the following:
 - Outdated versions must be archived and marked inactive.
 - Contradictions across documents must be logged and resolved by an owner.
 - SOPs should receive a raw score, final gated score, rating band, and remediation backlog.
+- Legal/SME review packets should be generated for unresolved regulatory, contractual, privacy, security, operational, or risk acceptance questions.
 
 ## Important Disclaimer
 
-This repository provides an operational governance framework. It does not provide legal advice and does not replace review by legal, privacy, security, or compliance owners.
+This repository provides an operational governance framework. It does not provide legal advice and does not replace review by legal, privacy, security, compliance, product, or operational owners.
 
 ## Next Recommended Builds
 
 - Add a SOC 2 and audit control mapping rule pack.
 - Add a project document ingestion workflow.
 - Add a contradiction detector for SOPs, Gantt charts, and Jira/ADO work items.
-- Add example scorecards for healthcare, finance, retail, SaaS, and public sector workflows.
-- Add a lightweight CLI or script that reads an SOP and produces a structured scorecard.
+- Add example scorecards and review packets for healthcare, finance, retail, SaaS, and public sector workflows.
+- Add a lightweight CLI or script that reads an SOP and produces a structured scorecard plus Legal/SME review packet when needed.
