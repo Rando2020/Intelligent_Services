@@ -1,0 +1,413 @@
+version: "0.1.0"
+last_updated: "2026-05-28"
+
+purpose: >
+  Defines a weighted SOP quality scoring model for Intelligent Services agents.
+  The score evaluates whether an SOP is clear, controlled, executable, auditable,
+  and aligned to data governance and compliance expectations.
+
+non_legal_advice_notice: >
+  This scoring model supports operational quality review. It does not provide legal,
+  privacy, security, or compliance approval.
+
+score_model:
+  max_score: 100
+  passing_threshold: 80
+  conditional_threshold: 70
+  audit_ready_threshold: 90
+  scoring_method: >
+    Score each dimension independently. Apply mandatory gate caps after the raw score is calculated.
+    If a critical gate fails, cap the final score according to the gate rule even if the raw score is high.
+  rating_bands:
+    - id: AUDIT_READY
+      min_score: 90
+      max_score: 100
+      label: Audit-ready
+      meaning: SOP is clear, controlled, evidence-backed, and ready for operational use with normal review cadence.
+      required_action: Maintain review cadence and monitor changes.
+    - id: CONTROLLED
+      min_score: 80
+      max_score: 89
+      label: Controlled but improvable
+      meaning: SOP can be used operationally, but some clarity, evidence, or automation gaps remain.
+      required_action: Remediate medium-priority gaps within the next review cycle.
+    - id: CONDITIONAL_USE
+      min_score: 70
+      max_score: 79
+      label: Conditional use
+      meaning: SOP may be usable with supervision or compensating controls, but should not be treated as mature.
+      required_action: Assign remediation owner and due date before relying on it for critical workflows.
+    - id: REMEDIATION_REQUIRED
+      min_score: 50
+      max_score: 69
+      label: Remediation required
+      meaning: SOP has material quality or control gaps.
+      required_action: Do not use for regulated, production, or high-risk workflows until remediated.
+    - id: UNCONTROLLED
+      min_score: 0
+      max_score: 49
+      label: Uncontrolled or not executable
+      meaning: SOP is missing essential structure, ownership, controls, or evidence.
+      required_action: Rebuild SOP before operational use.
+
+mandatory_gate_caps:
+  - id: GATE-NO-OWNER
+    name: Missing accountable owner
+    condition: SOP has no accountable owner or owning team.
+    cap_final_score_at: 69
+    severity: critical
+    rationale: An ownerless SOP cannot be maintained, approved, or audited.
+
+  - id: GATE-NO-VERSION
+    name: Missing version or effective date
+    condition: SOP has no version, effective date, or approval state.
+    cap_final_score_at: 79
+    severity: high
+    rationale: Users cannot determine whether the procedure is current.
+
+  - id: GATE-REGULATED-NO-CONTROLS
+    name: Regulated workflow missing control mapping
+    condition: SOP involves PHI, PCI, personal data, confidential data, external delivery, or production access and lacks control mapping.
+    cap_final_score_at: 69
+    severity: critical
+    rationale: High-risk workflows require explicit control evidence and escalation paths.
+
+  - id: GATE-NO-INPUTS-OUTPUTS
+    name: Missing inputs or outputs
+    condition: SOP does not define required inputs, outputs, source systems, or destination systems.
+    cap_final_score_at: 74
+    severity: high
+    rationale: A procedure cannot be executed repeatably if inputs and outputs are undefined.
+
+  - id: GATE-NO-FAILURE-PATH
+    name: Missing exception or failure handling
+    condition: SOP contains no failure path, escalation path, rollback step, or issue logging expectation.
+    cap_final_score_at: 79
+    severity: high
+    rationale: Operational procedures must tell users what to do when standard steps fail.
+
+  - id: GATE-PHI-PCI-EXPOSURE
+    name: Sensitive data exposure in SOP content
+    condition: SOP includes actual PHI, PCI, secrets, credentials, access tokens, passwords, private keys, or live sensitive records.
+    cap_final_score_at: 49
+    severity: critical
+    rationale: SOP content must not expose sensitive data.
+    required_action: Remove sensitive data immediately, rotate exposed credentials if applicable, and escalate to security/compliance.
+
+scoring_dimensions:
+  - id: SOP-SCORE-001
+    name: Metadata, ownership, and lifecycle status
+    weight: 10
+    intent: Confirms the SOP is owned, current, approved, and maintainable.
+    scoring_rules:
+      full_points:
+        - Has clear title, purpose, owner, accountable approver, version, effective date, last reviewed date, next review date, and status.
+        - Identifies lifecycle phase and whether the SOP is draft, active, deprecated, or archived.
+      partial_points:
+        - Has owner and version but missing review cadence or approval state.
+        - Has owner but unclear accountable approver.
+      zero_points:
+        - No owner, no version, or no indication whether the SOP is active.
+    required_evidence:
+      - sop_owner
+      - approver
+      - version
+      - effective_date
+      - review_cadence
+      - status
+
+  - id: SOP-SCORE-002
+    name: Purpose, scope, and trigger clarity
+    weight: 10
+    intent: Confirms readers know when to use the SOP and when not to use it.
+    scoring_rules:
+      full_points:
+        - Defines business purpose, scope, in-scope workflows, out-of-scope workflows, trigger events, assumptions, and prerequisites.
+      partial_points:
+        - Purpose exists but trigger conditions or exclusions are vague.
+      zero_points:
+        - Reader cannot determine when the SOP applies.
+    required_evidence:
+      - purpose_statement
+      - scope_statement
+      - trigger_conditions
+      - exclusions
+      - assumptions
+
+  - id: SOP-SCORE-003
+    name: Data classification and regulatory context
+    weight: 12
+    intent: Confirms the SOP identifies governed data and potential compliance overlays.
+    scoring_rules:
+      full_points:
+        - Classifies data categories and identifies whether GDPR, CCPA/CPRA, HIPAA, PCI-DSS, contractual, or internal policy controls may apply.
+        - States whether the SOP uses production data, test data, de-identified data, synthetic data, or no data.
+      partial_points:
+        - Mentions data sensitivity but lacks overlay trigger logic or evidence.
+      zero_points:
+        - Does not classify data or discuss regulatory context for a data-handling workflow.
+    required_evidence:
+      - data_categories
+      - data_sensitivity_level
+      - regulatory_overlay_review
+      - production_or_test_data_status
+      - minimum_necessary_review_when_applicable
+    maps_to:
+      - CTRL-DATA-MAP
+      - CTRL-CONSENT
+      - CTRL-BAA
+      - CTRL-PCI-SCOPE
+
+  - id: SOP-SCORE-004
+    name: Inputs, outputs, systems, and dependencies
+    weight: 12
+    intent: Confirms the procedure is technically and operationally traceable.
+    scoring_rules:
+      full_points:
+        - Lists required inputs, source systems, output artifacts, destination systems, upstream dependencies, downstream dependencies, file names, expected formats, and frequency.
+      partial_points:
+        - Inputs and outputs are present but dependency mapping is incomplete.
+      zero_points:
+        - Inputs, outputs, or systems are missing.
+    required_evidence:
+      - input_list
+      - output_list
+      - source_systems
+      - destination_systems
+      - dependencies
+      - file_or_interface_specifications_when_applicable
+
+  - id: SOP-SCORE-005
+    name: Step clarity and reproducibility
+    weight: 14
+    intent: Measures whether a trained user can execute the SOP consistently without tribal knowledge.
+    scoring_rules:
+      full_points:
+        - Steps are sequential, specific, action-oriented, role-aware, and include expected results, screenshots or examples when useful, and decision points.
+      partial_points:
+        - Steps are mostly clear but rely on implied knowledge, missing expected results, or vague verbs.
+      zero_points:
+        - Steps are too vague, unordered, or incomplete to execute.
+    required_evidence:
+      - numbered_steps
+      - expected_results
+      - decision_points
+      - examples_or_references
+      - role_per_step_when_multi-team
+
+  - id: SOP-SCORE-006
+    name: Roles, handoffs, approvals, and RACI/PASCI alignment
+    weight: 10
+    intent: Confirms responsibility is explicit across teams and decision points.
+    scoring_rules:
+      full_points:
+        - Defines performer, accountable owner, supporting roles, consulted parties, informed parties, approval steps, and handoff criteria.
+      partial_points:
+        - Lists teams but not decision rights or handoff criteria.
+      zero_points:
+        - No clear role ownership or approval expectations.
+    required_evidence:
+      - responsible_role
+      - accountable_role
+      - approval_steps
+      - handoff_criteria
+      - escalation_owner
+
+  - id: SOP-SCORE-007
+    name: Security, privacy, and access controls
+    weight: 12
+    intent: Confirms data and system access are governed during execution.
+    scoring_rules:
+      full_points:
+        - Defines access requirements, access approval path, secure transmission/storage expectations, encryption, logging, and prohibited behaviors.
+      partial_points:
+        - Mentions access or security but lacks evidence, logging, or prohibited behaviors.
+      zero_points:
+        - No security or access control guidance for a workflow involving systems or data.
+    required_evidence:
+      - access_requirements
+      - access_approval_reference
+      - secure_transfer_method
+      - encryption_or_storage_expectation
+      - audit_logging_expectation
+      - prohibited_data_handling_behaviors
+    maps_to:
+      - CTRL-ACCESS
+      - CTRL-ENCRYPTION
+      - CTRL-AUDIT-LOG
+
+  - id: SOP-SCORE-008
+    name: Exception handling, rollback, and escalation
+    weight: 10
+    intent: Confirms the SOP is resilient when normal execution fails.
+    scoring_rules:
+      full_points:
+        - Defines common errors, exception paths, stop conditions, rollback steps, incident triggers, escalation contacts, and issue logging requirements.
+      partial_points:
+        - Has escalation contacts but no rollback or stop conditions.
+      zero_points:
+        - No failure path is defined.
+    required_evidence:
+      - common_errors
+      - stop_conditions
+      - rollback_steps
+      - escalation_contacts
+      - issue_logging_location
+      - incident_trigger_conditions
+
+  - id: SOP-SCORE-009
+    name: QA, validation, evidence, and auditability
+    weight: 12
+    intent: Confirms successful execution can be proven later.
+    scoring_rules:
+      full_points:
+        - Defines validation checks, quality thresholds, evidence artifacts, audit log location, signoff requirements, and retention expectations.
+      partial_points:
+        - Includes QA steps but lacks evidence retention or signoff expectations.
+      zero_points:
+        - No validation or evidence collection is defined.
+    required_evidence:
+      - validation_steps
+      - acceptance_criteria
+      - evidence_artifacts
+      - signoff_record
+      - audit_log_location
+      - retention_expectation
+    maps_to:
+      - CTRL-AUDIT-LOG
+      - CTRL-RETENTION
+
+  - id: SOP-SCORE-010
+    name: Change management and downstream impact
+    weight: 8
+    intent: Confirms SOP changes propagate to dependent project plans, tickets, teams, training, and controls.
+    scoring_rules:
+      full_points:
+        - Defines change request process, impacted artifacts, reviewer roles, communication path, training updates, and archive expectations.
+      partial_points:
+        - Version history exists but no downstream impact process is defined.
+      zero_points:
+        - No change control or archive expectations are defined.
+    required_evidence:
+      - change_request_process
+      - version_history
+      - impacted_artifacts
+      - communication_plan
+      - archive_process
+      - training_update_requirement
+    maps_to:
+      - DOC-004
+      - DOC-005
+
+issue_severity_model:
+  severity_levels:
+    - id: CRITICAL
+      score_impact_guidance: "Apply relevant gate cap. If no gate applies, subtract 15 to 25 points."
+      examples:
+        - Sensitive data included in SOP.
+        - Regulated workflow lacks control mapping.
+        - No accountable owner.
+        - No secure transfer method for governed data.
+    - id: HIGH
+      score_impact_guidance: "Subtract 8 to 15 points or cap according to gate."
+      examples:
+        - Missing version/effective date.
+        - Missing failure path.
+        - Missing inputs/outputs.
+        - Missing access approval path.
+    - id: MEDIUM
+      score_impact_guidance: "Subtract 3 to 8 points."
+      examples:
+        - Vague handoff criteria.
+        - Missing examples.
+        - QA evidence not retained clearly.
+    - id: LOW
+      score_impact_guidance: "Subtract 1 to 3 points."
+      examples:
+        - Formatting issue.
+        - Minor wording ambiguity.
+        - Missing helpful reference link.
+
+review_modes:
+  - id: FAST_TRIAGE
+    name: Fast triage
+    purpose: Quickly identify whether an SOP is safe to use or needs remediation.
+    required_outputs:
+      - final_score
+      - rating_band
+      - failed_gates
+      - top_5_gaps
+      - go_no_go_recommendation
+
+  - id: FULL_AUDIT
+    name: Full audit
+    purpose: Produce detailed scoring, evidence gaps, control mappings, and remediation actions.
+    required_outputs:
+      - final_score
+      - raw_score
+      - rating_band
+      - dimension_scores
+      - failed_gates
+      - missing_evidence
+      - contradiction_log
+      - regulatory_overlay_flags
+      - remediation_backlog
+      - owner_assignments
+
+  - id: IMPLEMENTATION_READINESS
+    name: Implementation readiness
+    purpose: Determine whether an SOP is ready to guide execution in a project lifecycle.
+    required_outputs:
+      - lifecycle_phase
+      - dependent_project_tasks
+      - sop_to_task_linkage
+      - readiness_score
+      - blocking_gaps
+      - execution_risks
+
+agent_scoring_contract:
+  must_do:
+    - Score against all 10 dimensions unless the user explicitly requests fast triage.
+    - Identify failed mandatory gates before giving a final rating.
+    - Separate raw score from final gated score.
+    - Cite specific missing evidence for each deduction.
+    - Map regulated workflow findings back to data governance controls when possible.
+    - Produce remediation actions that are specific, assignable, and testable.
+  must_not_do:
+    - Do not call an SOP audit-ready if required evidence is missing.
+    - Do not ignore a critical gate because the SOP is well written.
+    - Do not assume compliance from policy language alone.
+    - Do not include real PHI, PCI, secrets, credentials, or sensitive data in examples.
+    - Do not treat screenshots as safe without checking for sensitive data exposure.
+
+standard_output_template: |
+  ## SOP Quality Scorecard
+
+  ### Summary
+  - SOP reviewed:
+  - Review mode:
+  - Raw score:
+  - Final gated score:
+  - Rating:
+  - Go/No-Go:
+
+  ### Failed Gates
+  | Gate ID | Finding | Cap Applied | Required Action |
+  |---|---|---:|---|
+
+  ### Dimension Scores
+  | Dimension | Weight | Score | Finding | Missing Evidence |
+  |---|---:|---:|---|---|
+
+  ### Regulatory and Governance Flags
+  | Area | Trigger | Risk | Required Evidence | Escalation Owner |
+  |---|---|---|---|---|
+
+  ### Remediation Backlog
+  | Priority | Action | Owner | Due Date | Acceptance Criteria |
+  |---|---|---|---|---|
+
+  ### Final Recommendation
+  - Decision:
+  - Conditions:
+  - Next review date:
