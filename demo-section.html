@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Section — Intelligent Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f7f5f0;font-family:'Archivo',sans-serif;color:#14130f}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 56px}
+  .mono{font-family:'Spline Sans Mono',monospace}
+
+  .seclabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a39a86;margin-bottom:16px}
+  h2{font-size:clamp(28px,4vw,44px);line-height:1.04;font-weight:900;letter-spacing:-.025em;margin-bottom:20px}
+  h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:#36322a;max-width:620px;margin-bottom:14px}
+  .demo-badge{display:inline-flex;align-items:center;gap:8px;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9a5a08;background:rgba(224,177,94,.14);border:1px solid rgba(224,177,94,.4);border-radius:6px;padding:6px 12px;margin-bottom:40px}
+
+  /* upload zone */
+  .stage{border:1px solid #ddd6c8;border-radius:16px;overflow:hidden;background:#fff}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid #e4ddcf}
+  .stage-head .t{font-family:'Spline Sans Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a39a86}
+  .stage-head .live{display:flex;align-items:center;gap:7px;font-family:'Spline Sans Mono',monospace;font-size:11px;color:#0d7d6a}
+  .stage-head .live .d{width:7px;height:7px;border-radius:50%;background:#1fb6c9;box-shadow:0 0 8px #1fb6c9}
+
+  .upload{padding:36px 28px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+  .upload:hover{background:#faf8f3}
+  .upload .ico{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#6d4aff,#1296ad);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 24px -8px rgba(109,74,255,.5)}
+  .upload .ico svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2}
+  .upload .big{font-size:17px;font-weight:700;margin-bottom:6px}
+  .upload .small{font-size:13px;color:#8a8273}
+  .upload .files{display:flex;gap:8px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  .upload .chip{font-family:'Spline Sans Mono',monospace;font-size:11px;color:#6a6356;background:#f1ede4;border:1px solid #e4ddcf;border-radius:6px;padding:5px 11px}
+
+  .runbtn{display:block;width:100%;border:none;cursor:pointer;background:linear-gradient(110deg,#6d4aff,#1296ad);color:#fff;font-family:'Archivo';font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:17px;transition:.2s}
+  .runbtn:hover{filter:brightness(1.08)}
+  .runbtn:disabled{opacity:.5;cursor:default}
+
+  /* processing pipeline */
+  .pipe{padding:0 28px;max-height:0;overflow:hidden;transition:max-height .5s ease}
+  .pipe.open{max-height:600px;padding:24px 28px}
+  .step{display:flex;align-items:center;gap:14px;padding:11px 0;opacity:.35;transition:opacity .3s}
+  .step.done{opacity:1}
+  .step .sdot{width:24px;height:24px;border-radius:50%;border:2px solid #ddd6c8;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.3s}
+  .step.done .sdot{border-color:#0d7d6a;background:#0d7d6a}
+  .step.done .sdot::after{content:"✓";color:#fff;font-size:13px;font-weight:700}
+  .step .stxt{font-size:14px;font-weight:500}
+  .step .stag{font-family:'Spline Sans Mono',monospace;font-size:11px;color:#a39a86;margin-left:auto}
+
+  /* output: connected space */
+  .out{max-height:0;overflow:hidden;transition:max-height .6s ease;border-top:0 solid #e4ddcf}
+  .out.open{max-height:2400px;border-top:1px solid #e4ddcf}
+  .out-inner{padding:28px}
+  .out-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;margin-bottom:4px}
+  .out-title .conf{font-family:'Spline Sans Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.06em;color:#1296ad;background:rgba(31,182,201,.1);border:1px solid rgba(31,182,201,.35);border-radius:5px;padding:3px 8px}
+  .out-sub{font-size:13px;color:#8a8273;margin-bottom:22px}
+
+  /* the space tree */
+  .space{display:grid;grid-template-columns:230px 1fr;gap:18px}
+  @media(max-width:680px){.space{grid-template-columns:1fr}}
+  .tree{border:1px solid #e4ddcf;border-radius:12px;padding:16px;background:#faf8f3;height:fit-content}
+  .tree .th{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#a39a86;margin-bottom:12px}
+  .tree .node{font-size:13px;padding:6px 0 6px 0;color:#36322a;display:flex;align-items:center;gap:8px}
+  .tree .node.sub{padding-left:18px;font-size:12.5px;color:#5a5347}
+  .tree .node .ti{width:14px;height:14px;flex-shrink:0;stroke:#8a8273;fill:none;stroke-width:2}
+  .tree .node.active{color:#4733c7;font-weight:600}
+  .tree .node.active .ti{stroke:#6d4aff}
+
+  /* doc preview */
+  .doc{border:1px solid #e4ddcf;border-radius:12px;overflow:hidden}
+  .doc-bar{display:flex;align-items:center;gap:8px;padding:11px 16px;background:#faf8f3;border-bottom:1px solid #e4ddcf}
+  .doc-bar .c{width:10px;height:10px;border-radius:50%}
+  .doc-bar .fn{font-family:'Spline Sans Mono',monospace;font-size:11px;color:#8a8273;margin-left:6px}
+  .doc-body{padding:20px}
+  .doc-h{font-size:18px;font-weight:900;letter-spacing:-.01em;margin-bottom:4px}
+  .doc-meta{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+  .doc-meta .m{font-family:'Spline Sans Mono',monospace;font-size:10.5px;padding:4px 9px;border-radius:5px;border:1px solid}
+  .m-rule{color:#4733c7;border-color:rgba(109,74,255,.3);background:rgba(109,74,255,.06)}
+  .m-jira{color:#0d7d6a;border-color:rgba(31,182,201,.35);background:rgba(31,182,201,.07)}
+  .m-owner{color:#9a5a08;border-color:rgba(224,177,94,.4);background:rgba(224,177,94,.1)}
+
+  .panel-row{display:flex;gap:8px;margin-bottom:16px;align-items:stretch}
+  .ipanel{flex:1;border:1px solid #e4ddcf;border-radius:9px;padding:12px 14px}
+  .ipanel .il{font-family:'Spline Sans Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:#a39a86;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  .ipanel .iv{font-size:12.5px;color:#36322a;line-height:1.5}
+
+  /* gantt mini */
+  .gantt{margin:4px 0}
+  .grow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .grow .gl{font-size:11px;color:#5a5347;width:78px;flex-shrink:0}
+  .gtrack{flex:1;height:14px;background:#f1ede4;border-radius:4px;position:relative;overflow:hidden}
+  .gbar{position:absolute;height:100%;border-radius:4px;opacity:.9}
+  .gb1{background:linear-gradient(90deg,#6d4aff,#8b6dff);left:0;width:40%}
+  .gb2{background:linear-gradient(90deg,#1296ad,#1fb6c9);left:32%;width:38%}
+  .gb3{background:linear-gradient(90deg,#c98a1a,#e0b15e);left:62%;width:38%}
+
+  /* agile board mini */
+  .board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .col{background:#faf8f3;border:1px solid #e4ddcf;border-radius:7px;padding:8px}
+  .col .ch{font-family:'Spline Sans Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:#a39a86;margin-bottom:7px}
+  .tk{background:#fff;border:1px solid #e4ddcf;border-radius:5px;padding:6px 7px;font-size:10.5px;color:#36322a;margin-bottom:5px;line-height:1.3}
+  .tk .tkid{font-family:'Spline Sans Mono',monospace;font-size:8.5px;color:#1296ad;display:block;margin-bottom:2px}
+
+  /* confluence storage format */
+  .cf{margin-top:16px;border:1px solid #2a2a3a;border-radius:10px;overflow:hidden;background:#13131c}
+  .cf-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#1a1a26;border-bottom:1px solid #2a2a3a}
+  .cf-bar .fn{font-family:'Spline Sans Mono',monospace;font-size:11px;color:#7a82a0;margin-left:4px}
+  .cf-bar .badge{margin-left:auto;font-family:'Spline Sans Mono',monospace;font-size:9.5px;color:#5ee0c5;border:1px solid rgba(94,224,197,.3);border-radius:4px;padding:2px 7px}
+  .cf-body{padding:16px 18px;font-family:'Spline Sans Mono',monospace;font-size:11.5px;line-height:1.7;overflow-x:auto;color:#c9d1e0}
+  .cf-body .ln{display:block;white-space:pre}
+  .cf .tag{color:#7aa2ff}.cf .ns{color:#5ee0c5}.cf .at{color:#e0b15e}.cf .val{color:#e07a9a}.cf .txt{color:#c9d1e0}.cf .com{color:#5a6378}
+
+  .footer-note{margin-top:20px;font-size:12.5px;color:#8a8273;line-height:1.5;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="seclabel">// The Demo</div>
+  <h2>One file in. A <em>living</em> space out.</h2>
+  <p class="lede">Most teams write documents that don't breathe — they go stale, duplicate each other, and walk out the door when people leave. Intelligent Services builds a connected Confluence space where every SOP is tied to its Agile work items, Gantt phase, owner, and governing rules.</p>
+  <div class="demo-badge"><span>●</span> Example output · illustrative, not live processing</div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="t">Ingestion → Governed Space</span>
+      <span class="live"><span class="d"></span>rule_pack v0.1</span>
+    </div>
+
+    <div class="upload" id="drop">
+      <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div>
+      <div class="big" id="upbig">Drop a process doc, meeting notes, or Jira export</div>
+      <div class="small">PDF · DOCX · MD · CSV — the messy input that usually becomes a stale wiki page</div>
+      <div class="files">
+        <span class="chip">intake-process-notes.docx</span>
+        <span class="chip">payer-onboarding.csv</span>
+      </div>
+    </div>
+
+    <button class="runbtn" id="run">Generate Governed Space →</button>
+
+    <div class="pipe" id="pipe">
+      <div class="step" data-s="0"><span class="sdot"></span><span class="stxt">Classifying data categories &amp; context</span><span class="stag">DG-01</span></div>
+      <div class="step" data-s="1"><span class="sdot"></span><span class="stxt">Triggering regulatory overlays (PHI detected → HIPAA)</span><span class="stag">RO-01</span></div>
+      <div class="step" data-s="2"><span class="sdot"></span><span class="stxt">Mapping lifecycle phases to Gantt + Agile work items</span><span class="stag">PL-01</span></div>
+      <div class="step" data-s="3"><span class="sdot"></span><span class="stxt">Linking SOPs to tasks, owners &amp; evidence</span><span class="stag">DC-01</span></div>
+      <div class="step" data-s="4"><span class="sdot"></span><span class="stxt">Rendering Confluence storage format</span><span class="stag">AE-01</span></div>
+    </div>
+
+    <div class="out" id="out">
+      <div class="out-inner">
+        <div class="out-title">Payer Onboarding <span class="conf">Confluence Space · PAYOPS</span></div>
+        <div class="out-sub">A connected space — not a folder of orphan documents.</div>
+
+        <div class="space">
+          <div class="tree">
+            <div class="th">Space Structure</div>
+            <div class="node"><svg class="ti" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-7l-2-2H5a2 2 0 00-2 2z"/></svg>PAYOPS Home</div>
+            <div class="node active sub"><svg class="ti" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>SOP · Payer Intake</div>
+            <div class="node sub"><svg class="ti" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>SOP · Eligibility Load</div>
+            <div class="node sub"><svg class="ti" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/></svg>Gantt · Onboarding Plan</div>
+            <div class="node sub"><svg class="ti" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Agile Board (Jira link)</div>
+            <div class="node sub"><svg class="ti" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Evidence Index</div>
+          </div>
+
+          <div class="doc">
+            <div class="doc-bar"><span class="c" style="background:#e0626d"></span><span class="c" style="background:#e0b15e"></span><span class="c" style="background:#5ee0c5"></span><span class="fn">SOP · Payer Intake</span></div>
+            <div class="doc-body">
+              <div class="doc-h">SOP: Payer Intake &amp; Validation</div>
+              <div class="doc-meta">
+                <span class="m m-rule">RULE · HIPAA · DC-01</span>
+                <span class="m m-jira">JIRA · PAYOPS-142</span>
+                <span class="m m-owner">OWNER · Implementation Lead</span>
+              </div>
+
+              <div class="panel-row">
+                <div class="ipanel">
+                  <div class="il">⛬ Gantt phase reference</div>
+                  <div class="gantt">
+                    <div class="grow"><span class="gl">Initiation</span><div class="gtrack"><div class="gbar gb1"></div></div></div>
+                    <div class="grow"><span class="gl">Execution</span><div class="gtrack"><div class="gbar gb2"></div></div></div>
+                    <div class="grow"><span class="gl">Validation</span><div class="gtrack"><div class="gbar gb3"></div></div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ipanel" style="margin-bottom:16px">
+                <div class="il">▦ Linked Agile work items</div>
+                <div class="board">
+                  <div class="col"><div class="ch">To Do</div><div class="tk"><span class="tkid">PAYOPS-143</span>Map eligibility fields</div></div>
+                  <div class="col"><div class="ch">In Progress</div><div class="tk"><span class="tkid">PAYOPS-142</span>Build intake SOP</div></div>
+                  <div class="col"><div class="ch">Done</div><div class="tk"><span class="tkid">PAYOPS-138</span>Define data classes</div></div>
+                </div>
+              </div>
+
+              <div class="cf">
+                <div class="cf-bar"><span class="fn">storage-format.xml</span><span class="badge">Atlassian-ready</span></div>
+                <div class="cf-body">
+<span class="ln"><span class="com">&lt;!-- SOP linked to Jira + status, not a static page --&gt;</span></span>
+<span class="ln"><span class="tag">&lt;<span class="ns">ac:</span>structured-macro</span> <span class="at">ac:name</span>=<span class="val">"jira"</span><span class="tag">&gt;</span></span>
+<span class="ln">  <span class="tag">&lt;<span class="ns">ac:</span>parameter</span> <span class="at">ac:name</span>=<span class="val">"key"</span><span class="tag">&gt;</span><span class="txt">PAYOPS-142</span><span class="tag">&lt;/ac:parameter&gt;</span></span>
+<span class="ln"><span class="tag">&lt;/ac:structured-macro&gt;</span></span>
+<span class="ln"><span class="tag">&lt;<span class="ns">ac:</span>structured-macro</span> <span class="at">ac:name</span>=<span class="val">"status"</span><span class="tag">&gt;</span></span>
+<span class="ln">  <span class="tag">&lt;<span class="ns">ac:</span>parameter</span> <span class="at">ac:name</span>=<span class="val">"colour"</span><span class="tag">&gt;</span><span class="txt">Green</span><span class="tag">&lt;/ac:parameter&gt;</span></span>
+<span class="ln">  <span class="tag">&lt;<span class="ns">ac:</span>parameter</span> <span class="at">ac:name</span>=<span class="val">"title"</span><span class="tag">&gt;</span><span class="txt">HIPAA REVIEWED</span><span class="tag">&lt;/ac:parameter&gt;</span></span>
+<span class="ln"><span class="tag">&lt;/ac:structured-macro&gt;</span></span>
+<span class="ln"><span class="tag">&lt;<span class="ns">ac:</span>link</span><span class="tag">&gt;</span><span class="tag">&lt;<span class="ns">ri:</span>page</span> <span class="at">ri:content-title</span>=<span class="val">"Evidence Index"</span><span class="tag">/&gt;</span><span class="tag">&lt;/ac:link&gt;</span></span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-note">Every page carries its rule IDs, owner, Jira link, and Gantt phase — so the space stays current as work moves, and knowledge doesn't leave when people do.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const run=document.getElementById('run');
+  const pipe=document.getElementById('pipe');
+  const out=document.getElementById('out');
+  const steps=[...document.querySelectorAll('.step')];
+  let running=false;
+  function go(){
+    if(running) return; running=true;
+    steps.forEach(s=>s.classList.remove('done'));
+    out.classList.remove('open');
+    pipe.classList.add('open');
+    run.disabled=true; run.textContent='Generating…';
+    let i=0;
+    const iv=setInterval(()=>{
+      if(i<steps.length){steps[i].classList.add('done');i++;}
+      else{
+        clearInterval(iv);
+        out.classList.add('open');
+        run.disabled=false; run.textContent='Run Again →';
+        running=false;
+        out.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }
+    },520);
+  }
+  run.addEventListener('click',go);
+  document.getElementById('drop').addEventListener('click',go);
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hybrid v2 — Boxed Components</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0a0b0f;padding:40px 20px;font-family:'Archivo',sans-serif}
+  .note{max-width:1000px;margin:0 auto 16px;font-family:'Spline Sans Mono',monospace;font-size:13px;color:#8a93a0;line-height:1.6}
+  .note b{color:#5ee0c5}
+  .frame{max-width:1000px;margin:0 auto;border-radius:18px;overflow:hidden;border:1px solid #1c2230}
+
+  .hero{background:#f7f5f0;color:#14130f;padding:56px 56px 60px;position:relative;overflow:hidden}
+  .hero .aur{position:absolute;border-radius:50%;filter:blur(85px);pointer-events:none}
+  .hero .a1{width:440px;height:440px;background:rgba(124,92,255,.20);top:-180px;right:-90px}
+  .hero .a2{width:340px;height:340px;background:rgba(31,182,201,.18);top:-50px;right:200px}
+  .hero .a3{width:300px;height:300px;background:rgba(94,224,197,.14);bottom:-160px;left:-70px}
+  .hero .inner{position:relative;z-index:2}
+
+  .kick{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #14130f;padding-bottom:16px;margin-bottom:40px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+  .kick .brand{display:flex;align-items:center;gap:10px}
+  .kick .brand .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(120deg,#7c5cff,#1fb6c9);box-shadow:0 0 14px rgba(124,92,255,.6)}
+  .kick .right{color:#6a6356;font-weight:500;letter-spacing:.1em}
+
+  h1{font-size:clamp(38px,6vw,74px);line-height:.97;font-weight:900;letter-spacing:-.03em;margin-bottom:34px}
+  h1 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;
+    background:linear-gradient(110deg,#6d4aff 10%,#1296ad 90%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  /* main two-col: copy panel + stats panel, both boxed */
+  .grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:stretch}
+  @media(max-width:680px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:rgba(255,255,255,.55);border:1px solid #ddd6c8;border-radius:14px;padding:26px 28px;backdrop-filter:blur(4px)}
+  .panel .plabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a39a86;margin-bottom:14px}
+  .sub{font-size:18px;line-height:1.55;color:#36322a}
+
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#ddd6c8;border:1px solid #ddd6c8;border-radius:14px;overflow:hidden}
+  .stat{background:rgba(255,255,255,.6);padding:18px 20px;backdrop-filter:blur(4px)}
+  .stat .v{font-size:26px;font-weight:900;letter-spacing:-.02em;
+    background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .stat .l{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#6a6356;font-weight:600;margin-top:6px;line-height:1.3}
+
+  .row{display:flex;gap:14px;flex-wrap:wrap;margin-top:18px}
+  .btn{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:16px 30px;border-radius:10px}
+  .b1{background:linear-gradient(110deg,#6d4aff,#1296ad);color:#fff;box-shadow:0 10px 30px -10px rgba(109,74,255,.5)}
+  .b2{background:transparent;border:1.5px solid #14130f;color:#14130f}
+
+  /* BOXED regulatory overlay component */
+  .overlays{margin-top:18px;border:1px solid #ddd6c8;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.5);backdrop-filter:blur(4px)}
+  .overlays .ohead{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid #e4ddcf;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#a39a86}
+  .overlays .ohead .live{display:flex;align-items:center;gap:7px;color:#0d7d6a}
+  .overlays .ohead .live .d{width:7px;height:7px;border-radius:50%;background:#1fb6c9;box-shadow:0 0 8px #1fb6c9}
+  .ogrid{display:grid;grid-template-columns:repeat(4,1fr)}
+  @media(max-width:680px){.ogrid{grid-template-columns:1fr 1fr}}
+  .ov{padding:18px 20px;border-right:1px solid #e4ddcf;border-bottom:1px solid #e4ddcf}
+  .ov:last-child{border-right:none}
+  .ov .tag{font-family:'Spline Sans Mono',monospace;font-weight:500;font-size:15px;letter-spacing:.02em;margin-bottom:6px;white-space:nowrap}
+  .ov .trg{font-size:11.5px;color:#6a6356;line-height:1.4;min-height:32px}
+  .t-gdpr .tag{color:#4733c7}.t-ccpa .tag{color:#0d7d6a}.t-hipaa .tag{color:#9a5a08}.t-pci .tag{color:#a8345a}
+  .ov .bar{height:3px;border-radius:2px;margin-top:12px;opacity:.85}
+  .t-gdpr .bar{background:linear-gradient(90deg,#6d4aff,#8b6dff)}
+  .t-ccpa .bar{background:linear-gradient(90deg,#1296ad,#1fb6c9)}
+  .t-hipaa .bar{background:linear-gradient(90deg,#c98a1a,#e0b15e)}
+  .t-pci .bar{background:linear-gradient(90deg,#a8345a,#d4537e)}
+</style>
+</head>
+<body>
+
+<div class="note"><b>v2 — boxed:</b> regulatory tags are now a structured panel (header with rule-pack label + live dot, four bordered cells each with trigger context and an accent bar) instead of floating chips. Copy and stats are also boxed into translucent panels that sit on the aurora wash. Everything reads as composed components on one grid.</div>
+
+<div class="frame">
+  <div class="hero">
+    <div class="aur a1"></div><div class="aur a2"></div><div class="aur a3"></div>
+    <div class="inner">
+      <div class="kick">
+        <span class="brand"><span class="dot"></span>Intelligent Services</span>
+        <span class="right">Data Governance · Compliance · AI Ops</span>
+      </div>
+      <h1>Governed AI for work that <em>can't afford to guess.</em></h1>
+
+      <div class="grid">
+        <div class="panel">
+          <div class="plabel">// The Premise</div>
+          <p class="sub">A framework that makes AI agents reason across SOPs, project lifecycles, and regulatory constraints — built by someone who has run the implementations, not theorized them.</p>
+          <div class="row">
+            <span class="btn b1">View Repository →</span>
+            <span class="btn b2">About</span>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="v">10+</div><div class="l">Yrs regulated ops</div></div>
+          <div class="stat"><div class="v">$20M+</div><div class="l">Revenue onramped</div></div>
+          <div class="stat"><div class="v">3K+</div><div class="l">Confluence docs authored</div></div>
+          <div class="stat"><div class="v">80%</div><div class="l">QA effort cut</div></div>
+        </div>
+      </div>
+
+      <div class="overlays">
+        <div class="ohead">
+          <span>Regulatory Overlays · rule_pack v0.1</span>
+          <span class="live"><span class="d"></span>Trigger logic active</span>
+        </div>
+        <div class="ogrid">
+          <div class="ov t-gdpr"><div class="tag">GDPR</div><div class="trg">EU/EEA data · cross-border transfer</div><div class="bar"></div></div>
+          <div class="ov t-ccpa"><div class="tag">CCPA/CPRA</div><div class="trg">CA resident PI · opt-out rights</div><div class="bar"></div></div>
+          <div class="ov t-hipaa"><div class="tag">HIPAA</div><div class="trg">PHI · payer/provider workflows</div><div class="bar"></div></div>
+          <div class="ov t-pci"><div class="tag">PCI-DSS</div><div class="trg">Cardholder data · payment flows</div><div class="bar"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

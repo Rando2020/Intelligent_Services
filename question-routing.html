@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Question Routing — Intelligent Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f7f5f0;font-family:'Archivo',sans-serif;color:#14130f}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 56px}
+  .seclabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a39a86;margin-bottom:16px}
+  h2{font-size:clamp(28px,4vw,44px);line-height:1.04;font-weight:900;letter-spacing:-.025em;margin-bottom:20px}
+  h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:#36322a;max-width:660px;margin-bottom:14px}
+  .sub2{font-size:15px;line-height:1.5;color:#6a6356;max-width:600px;margin-bottom:36px}
+  .sub2 b{color:#14130f}
+
+  .stage{border:1px solid #ddd6c8;border-radius:16px;overflow:hidden;background:#fff}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-bottom:1px solid #e4ddcf}
+  .stage-head .t{font-family:'Spline Sans Mono',monospace;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#a39a86}
+  .completeness{display:flex;align-items:center;gap:10px}
+  .completeness .lbl{font-family:'Spline Sans Mono',monospace;font-size:10px;color:#8a8273;text-transform:uppercase;letter-spacing:.06em}
+  .cbar{width:80px;height:7px;background:#f1ede4;border-radius:4px;overflow:hidden}
+  .cfill{height:100%;width:55%;background:linear-gradient(90deg,#6d4aff,#1296ad);border-radius:4px;transition:width .6s}
+  .cpct{font-family:'Spline Sans Mono',monospace;font-size:12px;font-weight:700;color:#4733c7;width:34px}
+
+  .gaps{padding:8px 0}
+  .gap{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:18px 24px;border-bottom:1px solid #f1ede4;transition:.3s}
+  .gap:last-child{border-bottom:none}
+  .gap.resolved{opacity:.5;background:#fdfcf9}
+  .gap .ricon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .gap .ricon svg{width:18px;height:18px;fill:none;stroke-width:2}
+  .r-de{background:rgba(109,74,255,.1)}.r-de svg{stroke:#6d4aff}
+  .r-ba{background:rgba(31,182,201,.1)}.r-ba svg{stroke:#1296ad}
+  .r-pm{background:rgba(224,177,94,.14)}.r-pm svg{stroke:#c98a1a}
+  .r-sec{background:rgba(224,122,154,.12)}.r-sec svg{stroke:#a8345a}
+
+  .gap .qbody{min-width:0}
+  .gap .qrole{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+  .qr-de{color:#4733c7}.qr-ba{color:#0d7d6a}.qr-pm{color:#9a5a08}.qr-sec{color:#a8345a}
+  .gap .qtext{font-size:14px;line-height:1.4;color:#14130f;font-weight:500}
+  .gap .qwhy{font-size:12px;color:#8a8273;margin-top:5px;display:flex;align-items:center;gap:7px}
+  .gap .qwhy .rid{font-family:'Spline Sans Mono',monospace;color:#4733c7;font-weight:700}
+
+  .gap .qact{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+  .gap .ans{border:1px solid #ddd6c8;background:#faf8f3;border-radius:7px;padding:8px 14px;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#36322a;cursor:pointer;transition:.15s;white-space:nowrap}
+  .gap .ans:hover{border-color:#6d4aff;color:#4733c7}
+  .gap.resolved .ans{background:#0d7d6a;border-color:#0d7d6a;color:#fff;cursor:default}
+  .gap .blocks{font-family:'Spline Sans Mono',monospace;font-size:10px;color:#a8345a}
+
+  /* guardrail callout */
+  .guard{margin-top:8px;padding:16px 24px;background:#fdfcf9;border-top:1px solid #e4ddcf;display:flex;gap:12px;align-items:flex-start}
+  .guard .gi{width:18px;height:18px;flex-shrink:0;margin-top:1px}
+  .guard .gi svg{width:18px;height:18px;stroke:#9a5a08;fill:none;stroke-width:2}
+  .guard .gt{font-size:13px;line-height:1.5;color:#5a5347}
+  .guard .gt b{color:#9a5a08}
+
+  .recap{margin-top:28px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:680px){.recap{grid-template-columns:1fr}}
+  .rc{border:1px solid #ddd6c8;border-radius:12px;padding:18px;background:#fff}
+  .rc .rh{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .rc .rh .n{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#6d4aff,#1296ad);color:#fff;font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .rc p{font-size:12.5px;line-height:1.5;color:#6a6356}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="seclabel">// Intelligent intake</div>
+  <h2>It doesn't guess the gaps. It <em>asks the right person.</em></h2>
+  <p class="lede">When the framework can't resolve something from the input, it doesn't hallucinate an answer or bury it in a TODO. It generates a precise question and routes it to the role who actually owns that answer.</p>
+  <p class="sub2">So technical documentation gets <b>fully filled out by the right people</b> — and execs stay out of the weeds instead of being asked questions they shouldn't have to answer.</p>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="t">Open questions · Payer Onboarding space</span>
+      <div class="completeness">
+        <span class="lbl">Doc completeness</span>
+        <div class="cbar"><div class="cfill" id="cfill"></div></div>
+        <span class="cpct" id="cpct">55%</span>
+      </div>
+    </div>
+
+    <div class="gaps" id="gaps">
+      <div class="gap" data-q="0">
+        <div class="ricon r-de"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/></svg></div>
+        <div class="qbody">
+          <div class="qrole qr-de">→ Data Engineer / Architect</div>
+          <div class="qtext">What is the retention period for member_dob and rx_history after load?</div>
+          <div class="qwhy"><span class="rid">DG-01</span> Required to close the retention-rule gap flagged at ingestion</div>
+        </div>
+        <div class="qact"><button class="ans">Answer</button><span class="blocks">blocks: HIPAA sign-off</span></div>
+      </div>
+
+      <div class="gap" data-q="1">
+        <div class="ricon r-ba"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+        <div class="qbody">
+          <div class="qrole qr-ba">→ Business Analyst</div>
+          <div class="qtext">Which takes precedence: the 24h SLA or the 48h compliance hold?</div>
+          <div class="qwhy"><span class="rid">DC-01</span> Needed to resolve the contradiction between REQ-1 and REQ-4</div>
+        </div>
+        <div class="qact"><button class="ans">Answer</button><span class="blocks">blocks: process SOP</span></div>
+      </div>
+
+      <div class="gap" data-q="2">
+        <div class="ricon r-pm"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
+        <div class="qbody">
+          <div class="qrole qr-pm">→ Product / Project Manager</div>
+          <div class="qtext">Who signs off on the validation phase before go-live?</div>
+          <div class="qwhy"><span class="rid">AE-01</span> Required to define the launch readiness gate</div>
+        </div>
+        <div class="qact"><button class="ans">Answer</button><span class="blocks">blocks: readiness gate</span></div>
+      </div>
+
+      <div class="gap" data-q="3">
+        <div class="ricon r-sec"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg></div>
+        <div class="qbody">
+          <div class="qrole qr-sec">→ Security / Data Owner</div>
+          <div class="qtext">Who is the access owner for the analytics_warehouse PHI tables?</div>
+          <div class="qwhy"><span class="rid">AE-01</span> Undefined owner triggered an escalation at ingestion</div>
+        </div>
+        <div class="qact"><button class="ans">Answer</button><span class="blocks">blocks: access control record</span></div>
+      </div>
+    </div>
+
+    <div class="guard">
+      <span class="gi"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <span class="gt"><b>Routing guardrail:</b> questions go to the role that owns the answer — never escalated to leadership to fill in technical detail. Execs see the <em>roll-up</em> of what's open, not the questions themselves.</span>
+    </div>
+  </div>
+
+  <div class="recap">
+    <div class="rc"><div class="rh"><span class="n">1</span>Detect</div><p>The rule pack finds what's missing, contradictory, or unowned — at ingestion, not after launch.</p></div>
+    <div class="rc"><div class="rh"><span class="n">2</span>Route</div><p>Each gap becomes a precise question assigned to the role who owns that answer.</p></div>
+    <div class="rc"><div class="rh"><span class="n">3</span>Close</div><p>Answers flow back into the linked page. Completeness rises. The doc stays alive.</p></div>
+  </div>
+</div>
+
+<script>
+  const order=[3,0,1,2];
+  const pcts=[68,80,90,100];
+  const cfill=document.getElementById('cfill'), cpct=document.getElementById('cpct');
+  document.querySelectorAll('.gap .ans').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const gap=btn.closest('.gap');
+      if(gap.classList.contains('resolved'))return;
+      gap.classList.add('resolved');
+      btn.textContent='✓ Answered';
+      const resolved=document.querySelectorAll('.gap.resolved').length;
+      const pct=pcts[Math.min(resolved-1,pcts.length-1)];
+      cfill.style.width=pct+'%'; cpct.textContent=pct+'%';
+    });
+  });
+</script>
+</body>
+</html>

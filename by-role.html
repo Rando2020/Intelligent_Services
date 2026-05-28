@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>By Role — Intelligent Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f7f5f0;font-family:'Archivo',sans-serif;color:#14130f}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 56px}
+  .seclabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a39a86;margin-bottom:16px}
+  h2{font-size:clamp(28px,4vw,44px);line-height:1.04;font-weight:900;letter-spacing:-.025em;margin-bottom:20px}
+  h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:#36322a;max-width:640px;margin-bottom:36px}
+
+  /* role tabs */
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+  @media(max-width:680px){.tabs{grid-template-columns:1fr 1fr}}
+  .tab{border:1px solid #ddd6c8;background:#fff;border-radius:12px;padding:16px 14px;cursor:pointer;transition:.18s;text-align:left}
+  .tab:hover{border-color:#bdb5a4}
+  .tab.on{border-color:transparent;background:linear-gradient(135deg,#6d4aff,#1296ad);box-shadow:0 8px 24px -10px rgba(109,74,255,.5)}
+  .tab .ic{width:30px;height:30px;border-radius:8px;background:#f1ede4;display:flex;align-items:center;justify-content:center;margin-bottom:10px;transition:.18s}
+  .tab.on .ic{background:rgba(255,255,255,.2)}
+  .tab .ic svg{width:17px;height:17px;stroke:#6a6356;fill:none;stroke-width:2;transition:.18s}
+  .tab.on .ic svg{stroke:#fff}
+  .tab .rn{font-size:13px;font-weight:700;line-height:1.2;transition:.18s}
+  .tab.on .rn{color:#fff}
+  .tab .rr{font-size:10.5px;color:#a39a86;margin-top:3px;transition:.18s}
+  .tab.on .rr{color:rgba(255,255,255,.75)}
+
+  /* panel */
+  .panel{border:1px solid #ddd6c8;border-radius:16px;background:#fff;overflow:hidden;margin-top:8px}
+  .phead{padding:18px 24px;border-bottom:1px solid #e4ddcf;display:flex;justify-content:space-between;align-items:center}
+  . phead{}
+  .phead .pt{font-size:16px;font-weight:900}
+  .phead .pq{font-family:'Spline Sans Mono',monospace;font-size:11px;color:#a39a86}
+
+  .body{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#e4ddcf}
+  @media(max-width:680px){.body{grid-template-columns:1fr}}
+  .cell{background:#fff;padding:20px}
+  .cell .cl{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a39a86;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+  .cell .cl .d{width:6px;height:6px;border-radius:50%}
+  .d-in{background:#c98a1a}.d-mid{background:#6d4aff}.d-out{background:#1296ad}
+  .item{font-size:13px;line-height:1.45;color:#36322a;padding:8px 0;border-bottom:1px solid #f1ede4;display:flex;gap:8px}
+  .item:last-child{border-bottom:none}
+  .item .mk{flex-shrink:0;width:14px;height:14px;margin-top:2px}
+  .item .mk svg{width:14px;height:14px;stroke:#1296ad;fill:none;stroke-width:2}
+  .item b{font-weight:700;color:#14130f}
+  .tagline{font-family:'Spline Sans Mono',monospace;font-size:10px;color:#4733c7;background:rgba(109,74,255,.06);border:1px solid rgba(109,74,255,.2);border-radius:5px;padding:3px 7px;display:inline-block;margin-top:4px}
+
+  /* space guidance footer in panel */
+  .guidance{padding:18px 24px;background:#fdfcf9;border-top:1px solid #e4ddcf}
+  .guidance .gl{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a39a86;margin-bottom:10px}
+  .guidance .gtext{font-size:13.5px;line-height:1.5;color:#36322a}
+  .guidance .gtext b{color:#4733c7}
+  .links{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+  .lk{font-family:'Spline Sans Mono',monospace;font-size:10.5px;color:#0d7d6a;background:rgba(31,182,201,.07);border:1px solid rgba(31,182,201,.3);border-radius:6px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px}
+  .lk::before{content:"→"}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="seclabel">// One framework, every role</div>
+  <h2>It doesn't just make a page. It tells your <em>whole team</em> how to connect.</h2>
+  <p class="lede">The same governance engine gives each role tailored Confluence and space guidance — so a data architect, an analyst, a PM, and an exec all work inside one linked system instead of four disconnected document graveyards.</p>
+
+  <div class="tabs">
+    <div class="tab on" data-r="0">
+      <div class="ic"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
+      <div class="rn">Data Engineer / Architect</div>
+      <div class="rr">Systems &amp; data flow</div>
+    </div>
+    <div class="tab" data-r="1">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+      <div class="rn">Business Analyst</div>
+      <div class="rr">Requirements &amp; process</div>
+    </div>
+    <div class="tab" data-r="2">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></div>
+      <div class="rn">Product / Project Mgr</div>
+      <div class="rr">Delivery &amp; roadmap</div>
+    </div>
+    <div class="tab" data-r="3">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></div>
+      <div class="rn">Exec Leader</div>
+      <div class="rr">Risk &amp; visibility</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="phead"><span class="pt" id="pt"></span><span class="pq" id="pq"></span></div>
+    <div class="body" id="body"></div>
+    <div class="guidance">
+      <div class="gl">⛬ Confluence / space guidance</div>
+      <div class="gtext" id="gtext"></div>
+      <div class="links" id="links"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const mk='<span class="mk"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L20 5"/></svg></span>';
+  const roles=[
+    {
+      pt:"Data Engineer / Architect",
+      pq:"uploads: data_map.csv, pipeline_spec.md",
+      in:["Data flow maps &amp; system dependencies","Pipeline specs and schemas","Source-to-target mappings"],
+      mid:["Classifies each data category &amp; PHI/PII exposure","Flags which systems trigger <b>HIPAA / PCI</b> controls","Identifies missing lineage &amp; retention rules"],
+      out:["Data dictionary page w/ classification tags","System dependency map (linked, not static)","Retention &amp; access control records","<span class='tagline'>RULE · DG-01 · RO-01</span>"],
+      g:"Create a <b>Data Governance</b> parent page. Link each pipeline page to its source system page and its retention record — so lineage is traversable, not buried in a diagram nobody updates.",
+      links:["System Dependency Map","Retention Records","Access Control Index"]
+    },
+    {
+      pt:"Business Analyst",
+      pq:"uploads: requirements.docx, process-notes.txt",
+      in:["Raw requirements &amp; meeting notes","As-is / to-be process descriptions","Stakeholder asks"],
+      mid:["Extracts requirements into structured BRDs","Detects contradictions across documents","Maps each requirement to a process step &amp; owner"],
+      out:["BRD page linked to source requirements","Process SOP w/ step-level owners","Contradiction log for resolution","<span class='tagline'>RULE · DC-01</span>"],
+      g:"Anchor every requirement to a <b>single source-of-truth page</b>. When a requirement changes, the linked SOP and BRD surface for review — killing the duplicate-doc problem at the root.",
+      links:["Requirements Source","Process SOPs","Contradiction Log"]
+    },
+    {
+      pt:"Product / Project Manager",
+      pq:"uploads: project-plan.mpp, jira-export.csv",
+      in:["Project plans &amp; Gantt charts","Jira / ADO work item exports","Launch readiness checklists"],
+      mid:["Maps lifecycle phases to required documents","Links each Jira epic to its governing SOP","Checks each phase has its evidence &amp; sign-offs"],
+      out:["Gantt page linked to live Jira board","Phase-gated doc checklist (auto-status)","Launch readiness page w/ owners","<span class='tagline'>RULE · PL-01 · AE-01</span>"],
+      g:"Build the space around the <b>project lifecycle</b>, not document type. Each phase page links to its SOPs, Jira items, and evidence — so status is visible and nothing ships without its sign-offs.",
+      links:["Gantt ↔ Jira Board","Phase Doc Checklist","Launch Readiness"]
+    },
+    {
+      pt:"Exec Leader",
+      pq:"asks: where's our compliance &amp; delivery risk?",
+      in:["No upload — a question","Cross-program visibility need","Audit &amp; risk posture"],
+      mid:["Rolls up rule coverage across all spaces","Surfaces missing owners &amp; stale documents","Flags overdue evidence &amp; open escalations"],
+      out:["Governance dashboard (live roll-up)","Risk register w/ ownership gaps","Audit-readiness summary by program","<span class='tagline'>RULE · AE-01</span>"],
+      g:"Get a <b>roll-up dashboard page</b> that reads every space's rule coverage. One link shows which programs are audit-ready and which have ownership gaps — no chasing teams for status.",
+      links:["Governance Dashboard","Risk Register","Audit Summary"]
+    }
+  ];
+
+  const body=document.getElementById('body');
+  function render(r){
+    const d=roles[r];
+    document.getElementById('pt').textContent=d.pt;
+    document.getElementById('pq').textContent=d.pq;
+    const col=(label,cls,arr)=>`<div class="cell"><div class="cl"><span class="d ${cls}"></span>${label}</div>${arr.map(x=>`<div class="item">${cls==='d-out'?mk:''}<span>${x}</span></div>`).join('')}</div>`;
+    body.innerHTML=col('What they bring','d-in',d.in)+col('What it does','d-mid',d.mid)+col('What it provides','d-out',d.out);
+    document.getElementById('gtext').innerHTML=d.g;
+    document.getElementById('links').innerHTML=d.links.map(l=>`<span class="lk">${l}</span>`).join('');
+  }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    render(+t.dataset.r);
+  }));
+  render(0);
+</script>
+</body>
+</html>

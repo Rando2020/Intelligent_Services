@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Real-Time Demo — Intelligent Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f7f5f0;font-family:'Archivo',sans-serif;color:#14130f}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 56px}
+
+  .seclabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a39a86;margin-bottom:16px}
+  h2{font-size:clamp(28px,4vw,44px);line-height:1.04;font-weight:900;letter-spacing:-.025em;margin-bottom:20px}
+  h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:#36322a;max-width:620px;margin-bottom:14px}
+  .demo-badge{display:inline-flex;align-items:center;gap:8px;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#9a5a08;background:rgba(224,177,94,.14);border:1px solid rgba(224,177,94,.4);border-radius:6px;padding:6px 12px;margin-bottom:36px}
+
+  .stage{border:1px solid #ddd6c8;border-radius:16px;overflow:hidden;background:#fff}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-bottom:1px solid #e4ddcf}
+  .stage-head .t{font-family:'Spline Sans Mono',monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#a39a86}
+  .stage-head .ctrl{display:flex;gap:8px}
+  .pbtn{font-family:'Spline Sans Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1px solid #ddd6c8;background:#faf8f3;color:#36322a;border-radius:7px;padding:7px 14px;cursor:pointer;transition:.15s}
+  .pbtn:hover{border-color:#6d4aff;color:#4733c7}
+  .pbtn.primary{background:linear-gradient(110deg,#6d4aff,#1296ad);color:#fff;border:none}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;min-height:420px}
+  @media(max-width:720px){.split{grid-template-columns:1fr}}
+  .col-in{border-right:1px solid #e4ddcf;padding:18px 20px}
+  @media(max-width:720px){.col-in{border-right:none;border-bottom:1px solid #e4ddcf}}
+  .col-out{padding:18px 20px;background:#fdfcf9}
+  .col-label{font-family:'Spline Sans Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#a39a86;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .col-label .dot{width:6px;height:6px;border-radius:50%}
+  .dot-in{background:#c98a1a}.dot-out{background:#1296ad}
+
+  /* input doc */
+  .raw{font-family:'Spline Sans Mono',monospace;font-size:12px;line-height:1.85;color:#5a5347;white-space:pre-wrap}
+  .raw .hl{background:rgba(224,177,94,.28);border-radius:3px;padding:1px 3px;transition:background .3s}
+  .raw .hl.lit{background:rgba(109,74,255,.25);color:#4733c7}
+  .cursor{display:inline-block;width:7px;height:14px;background:#6d4aff;vertical-align:-2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+  /* analysis log */
+  .log{margin-top:18px;border-top:1px dashed #e4ddcf;padding-top:14px}
+  .logline{font-family:'Spline Sans Mono',monospace;font-size:11px;line-height:1.5;color:#8a8273;opacity:0;transform:translateY(4px);transition:.3s;margin-bottom:7px;display:flex;gap:8px}
+  .logline.show{opacity:1;transform:none}
+  .logline .rid{color:#4733c7;font-weight:700;flex-shrink:0}
+  .logline .ok{color:#0d7d6a}
+
+  /* output build */
+  .built{opacity:0;transform:translateY(8px);transition:.45s}
+  .built.show{opacity:1;transform:none}
+  .ph{font-size:16px;font-weight:900;letter-spacing:-.01em;margin-bottom:10px}
+  .meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .meta .m{font-family:'Spline Sans Mono',monospace;font-size:10px;padding:4px 8px;border-radius:5px;border:1px solid;opacity:0;transform:scale(.9);transition:.3s}
+  .meta .m.show{opacity:1;transform:none}
+  .m-rule{color:#4733c7;border-color:rgba(109,74,255,.3);background:rgba(109,74,255,.06)}
+  .m-jira{color:#0d7d6a;border-color:rgba(31,182,201,.35);background:rgba(31,182,201,.07)}
+  .m-owner{color:#9a5a08;border-color:rgba(224,177,94,.4);background:rgba(224,177,94,.1)}
+  .m-gantt{color:#a8345a;border-color:rgba(224,122,154,.4);background:rgba(224,122,154,.08)}
+
+  .obox{border:1px solid #e4ddcf;border-radius:9px;padding:11px 13px;margin-bottom:9px;opacity:0;transform:translateY(6px);transition:.4s}
+  .obox.show{opacity:1;transform:none}
+  .obox .ol{font-family:'Spline Sans Mono',monospace;font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:#a39a86;margin-bottom:8px}
+
+  .gantt .grow{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+  .gantt .gl{font-size:10.5px;color:#5a5347;width:68px;flex-shrink:0}
+  .gtrack{flex:1;height:12px;background:#f1ede4;border-radius:3px;position:relative;overflow:hidden}
+  .gbar{position:absolute;height:100%;border-radius:3px;width:0;transition:width .6s ease}
+  .gb1{background:linear-gradient(90deg,#6d4aff,#8b6dff);left:0}
+  .gb2{background:linear-gradient(90deg,#1296ad,#1fb6c9);left:32%}
+  .gb3{background:linear-gradient(90deg,#c98a1a,#e0b15e);left:62%}
+
+  .board{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+  .bcol{background:#faf8f3;border:1px solid #e4ddcf;border-radius:6px;padding:7px}
+  .bcol .bh{font-family:'Spline Sans Mono',monospace;font-size:8.5px;letter-spacing:.05em;text-transform:uppercase;color:#a39a86;margin-bottom:6px}
+  .tk{background:#fff;border:1px solid #e4ddcf;border-radius:4px;padding:5px 6px;font-size:9.5px;color:#36322a;line-height:1.3}
+  .tk .tkid{font-family:'Spline Sans Mono',monospace;font-size:8px;color:#1296ad;display:block;margin-bottom:1px}
+
+  .cf{border:1px solid #2a2a3a;border-radius:8px;overflow:hidden;background:#13131c}
+  .cf-bar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:#1a1a26;border-bottom:1px solid #2a2a3a}
+  .cf-bar .fn{font-family:'Spline Sans Mono',monospace;font-size:10px;color:#7a82a0}
+  .cf-bar .badge{margin-left:auto;font-family:'Spline Sans Mono',monospace;font-size:8.5px;color:#5ee0c5;border:1px solid rgba(94,224,197,.3);border-radius:4px;padding:2px 6px}
+  .cf-body{padding:12px 14px;font-family:'Spline Sans Mono',monospace;font-size:10.5px;line-height:1.65;overflow-x:auto;color:#c9d1e0;white-space:pre-wrap}
+  .cf .tag{color:#7aa2ff}.cf .ns{color:#5ee0c5}.cf .at{color:#e0b15e}.cf .val{color:#e07a9a}.cf .com{color:#5a6378}
+
+  .empty{color:#b8b0a0;font-size:13px;font-style:italic;padding:30px 0;text-align:center}
+
+  .prog{height:3px;background:#f1ede4;position:relative;overflow:hidden}
+  .prog .pf{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,#6d4aff,#1296ad);transition:width .3s linear}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="seclabel">// Watch it work</div>
+  <h2>From messy notes to a <em>governed, living</em> page — in real time.</h2>
+  <p class="lede">Press play. Watch a real intake note get read line by line, classified, checked against regulatory triggers, and rebuilt as a Confluence page wired to its Jira items, Gantt phase, owner, and rule IDs.</p>
+  <div class="demo-badge"><span>●</span> Scripted walkthrough of one real example · not live file processing</div>
+
+  <div class="stage">
+    <div class="stage-head">
+      <span class="t">Intake note → Governed Confluence page</span>
+      <div class="ctrl">
+        <button class="pbtn" id="reset">↺ Reset</button>
+        <button class="pbtn primary" id="play">▶ Play demo</button>
+      </div>
+    </div>
+    <div class="prog"><div class="pf" id="pf"></div></div>
+
+    <div class="split">
+      <div class="col-in">
+        <div class="col-label"><span class="dot dot-in"></span>Raw input · intake-note.txt</div>
+        <div class="raw" id="raw"></div>
+        <div class="log" id="log" style="display:none">
+          <div class="logline" data-l="0"><span class="rid">DG-01</span><span>Data class: <b>PHI</b> + payer eligibility</span></div>
+          <div class="logline" data-l="1"><span class="rid">RO-01</span><span>Trigger matched → <b>HIPAA overlay</b> <span class="ok">●</span></span></div>
+          <div class="logline" data-l="2"><span class="rid">PL-01</span><span>Phase: Execution → linked to Gantt + sprint</span></div>
+          <div class="logline" data-l="3"><span class="rid">DC-01</span><span>Owner undefined → <span style="color:#a8345a">escalation flagged</span></span></div>
+          <div class="logline" data-l="4"><span class="rid">AE-01</span><span>Evidence required: validation log <span class="ok">●</span></span></div>
+        </div>
+      </div>
+
+      <div class="col-out">
+        <div class="col-label"><span class="dot dot-out"></span>Generated page · PAYOPS space</div>
+        <div id="empty" class="empty">Output builds here as the input is analyzed…</div>
+        <div class="built" id="built">
+          <div class="ph">SOP: Payer Intake &amp; Validation</div>
+          <div class="meta">
+            <span class="m m-rule" data-m="0">HIPAA · DC-01</span>
+            <span class="m m-jira" data-m="1">PAYOPS-142</span>
+            <span class="m m-owner" data-m="2">OWNER: TBD ⚑</span>
+            <span class="m m-gantt" data-m="3">PHASE: Execution</span>
+          </div>
+
+          <div class="obox" data-o="0">
+            <div class="ol">⛬ Gantt phase reference</div>
+            <div class="gantt">
+              <div class="grow"><span class="gl">Initiation</span><div class="gtrack"><div class="gbar gb1" data-w="40"></div></div></div>
+              <div class="grow"><span class="gl">Execution</span><div class="gtrack"><div class="gbar gb2" data-w="38"></div></div></div>
+              <div class="grow"><span class="gl">Validation</span><div class="gtrack"><div class="gbar gb3" data-w="38"></div></div></div>
+            </div>
+          </div>
+
+          <div class="obox" data-o="1">
+            <div class="ol">▦ Linked Agile work items</div>
+            <div class="board">
+              <div class="bcol"><div class="bh">To Do</div><div class="tk"><span class="tkid">PAYOPS-143</span>Map fields</div></div>
+              <div class="bcol"><div class="bh">In Progress</div><div class="tk"><span class="tkid">PAYOPS-142</span>Build SOP</div></div>
+              <div class="bcol"><div class="bh">Done</div><div class="tk"><span class="tkid">PAYOPS-138</span>Data classes</div></div>
+            </div>
+          </div>
+
+          <div class="obox" data-o="2">
+            <div class="cf">
+              <div class="cf-bar"><span class="fn">storage-format.xml</span><span class="badge">Atlassian-ready</span></div>
+              <div class="cf-body"><span class="com">&lt;!-- live link, not a static page --&gt;</span>
+<span class="tag">&lt;<span class="ns">ac:</span>structured-macro</span> <span class="at">ac:name</span>=<span class="val">"jira"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;<span class="ns">ac:</span>parameter</span> <span class="at">ac:name</span>=<span class="val">"key"</span><span class="tag">&gt;</span>PAYOPS-142<span class="tag">&lt;/ac:parameter&gt;</span>
+<span class="tag">&lt;/ac:structured-macro&gt;</span>
+<span class="tag">&lt;<span class="ns">ac:</span>structured-macro</span> <span class="at">ac:name</span>=<span class="val">"status"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;<span class="ns">ac:</span>parameter</span> <span class="at">ac:name</span>=<span class="val">"title"</span><span class="tag">&gt;</span>HIPAA REVIEWED<span class="tag">&lt;/ac:parameter&gt;</span>
+<span class="tag">&lt;/ac:structured-macro&gt;</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const rawText="Intake call w/ new payer. They send eligibility + claims files weekly.\nFiles have member DOB, plan ID, meds. Need to validate before load.\nKyle was handling but he's gone now — nobody owns the checks?\nThis keeps breaking every quarter. Same fixes over and over.";
+  const rawEl=document.getElementById('raw');
+  const phrasesToHL=["eligibility + claims","member DOB, plan ID, meds","validate before load","nobody owns the checks","keeps breaking every quarter"];
+  const play=document.getElementById('play'), reset=document.getElementById('reset');
+  const log=document.getElementById('log'), built=document.getElementById('built'), empty=document.getElementById('empty');
+  const pf=document.getElementById('pf');
+  let timers=[];
+  function clearAll(){timers.forEach(t=>clearTimeout(t));timers=[];}
+  function T(fn,ms){timers.push(setTimeout(fn,ms));}
+
+  function doReset(){
+    clearAll();
+    rawEl.innerHTML=''; log.style.display='none';
+    document.querySelectorAll('.logline').forEach(l=>l.classList.remove('show'));
+    document.querySelectorAll('.meta .m').forEach(m=>m.classList.remove('show'));
+    document.querySelectorAll('.obox').forEach(o=>o.classList.remove('show'));
+    document.querySelectorAll('.gbar').forEach(b=>b.style.width='0');
+    built.classList.remove('show'); empty.style.display='block';
+    pf.style.width='0'; play.textContent='▶ Play demo'; play.disabled=false;
+  }
+
+  function highlight(text){
+    let html=text;
+    phrasesToHL.forEach((p,i)=>{html=html.replace(p,`<span class="hl" data-hl="${i}">${p}</span>`);});
+    return html;
+  }
+
+  function run(){
+    doReset(); play.disabled=true; play.textContent='● Running';
+    const total=8200;
+    let prog=0; const pint=setInterval(()=>{prog+=2;pf.style.width=Math.min(prog,100)+'%';if(prog>=100)clearInterval(pint);},total/50);
+    timers.push({clear:()=>clearInterval(pint)});
+
+    // 1. type the raw text
+    let i=0; const full=rawText;
+    function type(){
+      if(i<=full.length){
+        rawEl.innerHTML=highlight(full.slice(0,i))+'<span class="cursor"></span>';
+        i+=2; T(type,26);
+      } else {
+        rawEl.innerHTML=highlight(full);
+        afterType();
+      }
+    }
+    type();
+
+    function afterType(){
+      // 2. light up highlights + show empty fade
+      T(()=>{ log.style.display='block'; empty.style.display='none'; built.classList.add('show'); },300);
+      // 3. analysis loglines + corresponding output reveals, interleaved
+      const seq=[
+        ()=>{document.querySelector('[data-hl="0"]')?.classList.add('lit');document.querySelector('[data-hl="1"]')?.classList.add('lit');document.querySelector('.logline[data-l="0"]').classList.add('show');document.querySelector('.meta .m[data-m="0"]').classList.add('show');},
+        ()=>{document.querySelector('.logline[data-l="1"]').classList.add('show');document.querySelector('.meta .m[data-m="0"]').classList.add('show');},
+        ()=>{document.querySelector('[data-hl="2"]')?.classList.add('lit');document.querySelector('.logline[data-l="2"]').classList.add('show');document.querySelector('.meta .m[data-m="3"]').classList.add('show');document.querySelector('.obox[data-o="0"]').classList.add('show');document.querySelectorAll('.gbar').forEach(b=>b.style.width=b.dataset.w+'%');},
+        ()=>{document.querySelector('[data-hl="3"]')?.classList.add('lit');document.querySelector('.logline[data-l="3"]').classList.add('show');document.querySelector('.meta .m[data-m="2"]').classList.add('show');document.querySelector('.meta .m[data-m="1"]').classList.add('show');document.querySelector('.obox[data-o="1"]').classList.add('show');},
+        ()=>{document.querySelector('[data-hl="4"]')?.classList.add('lit');document.querySelector('.logline[data-l="4"]').classList.add('show');document.querySelector('.obox[data-o="2"]').classList.add('show');},
+        ()=>{play.textContent='▶ Play again';play.disabled=false;}
+      ];
+      seq.forEach((fn,idx)=>T(fn,600+idx*900));
+    }
+  }
+
+  play.addEventListener('click',run);
+  reset.addEventListener('click',doReset);
+</script>
+</body>
+</html>
