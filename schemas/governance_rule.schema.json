@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/governance_rule.schema.json",
+  "title": "Intelligent Services Governance Rule Schema",
+  "description": "Machine-readable schema for data governance, compliance, and project documentation rules used by Intelligent Services agents.",
+  "type": "object",
+  "required": ["version", "last_updated", "controls", "regulatory_overlays", "document_governance_rules"],
+  "properties": {
+    "version": {"type": "string"},
+    "last_updated": {"type": "string", "format": "date"},
+    "governance_principles": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/governance_principle"}
+    },
+    "data_categories": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/data_category"}
+    },
+    "project_lifecycle_phases": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/lifecycle_phase"}
+    },
+    "controls": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/control"}
+    },
+    "regulatory_overlays": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/regulatory_overlay"}
+    },
+    "document_governance_rules": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/document_rule"}
+    },
+    "agent_evaluation_contract": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "source_references": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/source_reference"}
+    }
+  },
+  "$defs": {
+    "governance_principle": {
+      "type": "object",
+      "required": ["id", "name", "rule"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "rule": {"type": "string"},
+        "rationale": {"type": "string"}
+      }
+    },
+    "data_category": {
+      "type": "object",
+      "required": ["id", "name", "description"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "examples": {"type": "array", "items": {"type": "string"}},
+        "default_controls": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "lifecycle_phase": {
+      "type": "object",
+      "required": ["description", "required_documents", "governance_checks"],
+      "properties": {
+        "description": {"type": "string"},
+        "required_documents": {"type": "array", "items": {"type": "string"}},
+        "governance_checks": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "control": {
+      "type": "object",
+      "required": ["id", "domain", "name", "rule", "severity", "applies_when", "required_evidence"],
+      "properties": {
+        "id": {"type": "string"},
+        "domain": {"type": "string"},
+        "name": {"type": "string"},
+        "rule": {"type": "string"},
+        "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "applies_when": {"type": "array", "items": {"type": "string"}},
+        "required_evidence": {"type": "array", "items": {"type": "string"}},
+        "automation_check": {"type": "string"},
+        "failure_response": {"type": "string"},
+        "maps_to": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "regulatory_overlay": {
+      "type": "object",
+      "required": ["name", "trigger_conditions", "required_controls", "prohibited_assumptions"],
+      "properties": {
+        "name": {"type": "string"},
+        "summary": {"type": "string"},
+        "trigger_conditions": {"type": "array", "items": {"type": "string"}},
+        "required_controls": {"type": "array", "items": {"type": "string"}},
+        "required_artifacts": {"type": "array", "items": {"type": "string"}},
+        "prohibited_assumptions": {"type": "array", "items": {"type": "string"}},
+        "escalation_conditions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "document_rule": {
+      "type": "object",
+      "required": ["id", "name", "rule", "required_evidence"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "rule": {"type": "string"},
+        "required_evidence": {"type": "array", "items": {"type": "string"}},
+        "automation_check": {"type": "string"}
+      }
+    },
+    "source_reference": {
+      "type": "object",
+      "required": ["id", "name", "url"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "url": {"type": "string", "format": "uri"},
+        "notes": {"type": "string"}
+      }
+    }
+  }
+}
