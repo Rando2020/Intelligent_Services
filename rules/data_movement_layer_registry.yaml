@@ -1,0 +1,652 @@
+version: "0.1.0"
+last_updated: "2026-05-28"
+
+purpose: >
+  Registry of data movement layers, transfer surfaces, outbound delivery systems,
+  sharing tools, replication paths, and manual movement patterns that Intelligent Services
+  agents should recognize when evaluating data governance, delivery, and compliance risk.
+
+non_legal_advice_notice: >
+  This registry supports operational risk detection and engineering review. It does not replace
+  Legal, Privacy, Security, Compliance, Architecture, or operational owner approval.
+
+core_rule: >
+  Any system, tool, job, folder, route, share, API, queue, export, report, or manual action that moves,
+  copies, exposes, publishes, shares, replicates, stages, or delivers governed data is part of the data
+  movement control boundary.
+
+interpretation_rules:
+  - id: MOVE-INTERPRET-001
+    name: Treat movement synonyms as control surfaces
+    rule: >
+      If project documentation mentions send, upload, download, export, share, publish, sync, replicate,
+      deliver, push, pull, stage, copy, route, transfer, drop, ingest, extract, unload, subscribe,
+      webhook, feed, stream, or distribute, evaluate the referenced layer as a data movement surface.
+
+  - id: MOVE-INTERPRET-002
+    name: Treat named tools and generic protocols equally
+    rule: >
+      The same review applies whether the layer is named as a vendor product, protocol, folder, cloud service,
+      database feature, manual process, or homegrown script.
+
+  - id: MOVE-INTERPRET-003
+    name: Last-mile delivery is never out of scope
+    rule: >
+      If the business process ends when a file, dataset, report, feed, table, message, or API response reaches
+      an external recipient, that final delivery step must be reviewed even if it is outside the application code.
+
+  - id: MOVE-INTERPRET-004
+    name: Manual movement is high risk by default
+    rule: >
+      Manual uploads, manual renaming, copied folders, drag-and-drop delivery, spreadsheet attachments,
+      and human-selected recipients must be treated as elevated risk unless constrained by strong controls.
+
+required_controls_for_any_movement_layer:
+  - movement_owner
+  - source_system
+  - destination_system_or_recipient
+  - data_classification
+  - canonical_client_or_recipient_id
+  - permitted_use
+  - approval_status
+  - access_control
+  - secure_transport_or_storage
+  - manifest_or_metadata_record
+  - validation_or_reconciliation_check
+  - logging_and_monitoring
+  - retention_or_deletion_rule
+  - failure_or_recall_process
+
+movement_layer_categories:
+  - id: MLC-MFT
+    name: Managed File Transfer platforms
+    description: Enterprise tools used to transfer files internally or externally with automation, workflows, users, folders, and partner routes.
+    common_terms:
+      - MOVEit
+      - Progress MOVEit
+      - GoAnywhere MFT
+      - Axway Managed File Transfer
+      - Globalscape EFT
+      - Fortra EFT
+      - IBM Sterling File Gateway
+      - IBM Sterling B2B Integrator
+      - Cleo Integration Cloud
+      - MFT
+      - managed file transfer
+    typical_risks:
+      - wrong_recipient
+      - wrong_folder
+      - stale_partner_route
+      - manual_label_mismatch
+      - exposed_web_transfer_portal
+      - overbroad_user_access
+      - missing_delivery_confirmation
+    required_checks:
+      - recipient_allowlist
+      - route_validation
+      - canonical_client_id_validation
+      - outbound_quarantine
+      - file_manifest
+      - checksum_or_hash
+      - release_approval
+      - post_delivery_confirmation
+      - user_and_service_account_review
+    default_risk: high
+
+  - id: MLC-SFTP-FTP
+    name: File transfer protocols and clients
+    description: Protocol-level transfer paths and client tools used for direct file movement.
+    common_terms:
+      - SFTP
+      - FTPS
+      - FTP
+      - SCP
+      - rsync
+      - WinSCP
+      - FileZilla
+      - Cyberduck
+      - OpenSSH SFTP
+      - secure file transfer
+    typical_risks:
+      - insecure_protocol
+      - unmanaged_client
+      - credential_reuse
+      - key_management_gap
+      - manual_destination_selection
+      - missing_transfer_log
+    required_checks:
+      - approved_protocol
+      - encryption_in_transit
+      - key_or_credential_owner
+      - endpoint_allowlist
+      - transfer_log
+      - destination_validation
+      - credential_rotation_or_review
+    default_risk: high
+
+  - id: MLC-CLOUD-TRANSFER
+    name: Cloud transfer services
+    description: Cloud-native services that expose managed transfer endpoints, transfer workflows, or partner-facing transfer interfaces.
+    common_terms:
+      - AWS Transfer Family
+      - AWS SFTP
+      - AWS FTPS
+      - AWS AS2
+      - Azure SFTP
+      - Azure Blob SFTP
+      - Azure Data Box
+      - Google Storage Transfer Service
+      - GCP Transfer Appliance
+      - cloud managed transfer
+    typical_risks:
+      - bucket_or_container_misrouting
+      - identity_provider_misconfiguration
+      - public_or_overbroad_storage_access
+      - missing_workflow_logging
+      - partner_endpoint_mismatch
+    required_checks:
+      - storage_location_validation
+      - identity_provider_review
+      - IAM_or_RBAC_review
+      - transfer_workflow_log
+      - bucket_or_container_policy_review
+      - route_or_partner_validation
+      - encryption_and_key_management_review
+    default_risk: high
+
+  - id: MLC-OBJECT-STORAGE
+    name: Object storage and data lake drops
+    description: File or object movement through buckets, containers, landing zones, lake zones, or shared object paths.
+    common_terms:
+      - Amazon S3
+      - S3 bucket
+      - Azure Blob Storage
+      - Azure Data Lake Storage
+      - ADLS
+      - Google Cloud Storage
+      - GCS bucket
+      - landing zone
+      - raw zone
+      - curated zone
+      - bronze silver gold
+      - data lake
+    typical_risks:
+      - wrong_bucket
+      - wrong_prefix
+      - public_access
+      - missing_lifecycle_policy
+      - uncontrolled_temp_files
+      - stale_drop_location
+      - cross_account_access_gap
+    required_checks:
+      - bucket_or_container_allowlist
+      - path_or_prefix_validation
+      - object_manifest
+      - access_policy_review
+      - encryption_at_rest
+      - lifecycle_policy
+      - cross_account_access_review
+      - object_version_or_checksum
+    default_risk: high
+
+  - id: MLC-ETL-ORCHESTRATION
+    name: ETL, ELT, and workflow orchestration tools
+    description: Tools that extract, transform, load, schedule, orchestrate, or automate movement between systems.
+    common_terms:
+      - Informatica
+      - Informatica Cloud
+      - IICS
+      - SSIS
+      - Azure Data Factory
+      - ADF
+      - AWS Glue
+      - Apache Airflow
+      - Dagster
+      - Prefect
+      - dbt
+      - Fivetran
+      - Matillion
+      - Talend
+      - Alteryx
+      - Pentaho
+      - cron job
+      - batch job
+      - scheduled job
+    typical_risks:
+      - stale_connection
+      - wrong_environment
+      - wrong_parameter
+      - unreviewed_transformation
+      - uncontrolled_retry
+      - logging_sensitive_values
+      - missing_lineage
+    required_checks:
+      - code_or_config_version
+      - source_and_target_validation
+      - parameter_review
+      - environment_validation
+      - lineage_record
+      - run_log
+      - retry_and_failure_handling
+      - secret_management_review
+    default_risk: medium
+
+  - id: MLC-INTEGRATION-PLATFORMS
+    name: iPaaS, middleware, and API integration platforms
+    description: Integration layers that move data through connectors, APIs, scheduled flows, transformations, and business logic.
+    common_terms:
+      - MuleSoft
+      - Boomi
+      - Workato
+      - Zapier
+      - Make
+      - Jitterbit
+      - SnapLogic
+      - Celigo
+      - API gateway
+      - webhook
+      - REST API
+      - GraphQL API
+      - SOAP service
+      - middleware
+      - integration platform
+    typical_risks:
+      - overbroad_connector_scope
+      - webhook_exposes_sensitive_payload
+      - wrong_endpoint
+      - missing_authentication
+      - weak_secret_management
+      - payload_logging
+      - no_retry_controls
+    required_checks:
+      - endpoint_allowlist
+      - auth_and_secret_review
+      - payload_classification
+      - connector_scope_review
+      - rate_limit_and_retry_policy
+      - audit_log
+      - schema_contract
+      - error_handling
+    default_risk: high
+
+  - id: MLC-DATABASE-REPLICATION
+    name: Database replication, extracts, and cross-system sync
+    description: Direct table, schema, database, CDC, or replication paths between systems.
+    common_terms:
+      - database replication
+      - CDC
+      - change data capture
+      - read replica
+      - linked server
+      - database link
+      - materialized view
+      - SQL extract
+      - SQL export
+      - COPY INTO
+      - unload
+      - bulk export
+      - ODBC
+      - JDBC
+      - flat file extract
+    typical_risks:
+      - overbroad_table_access
+      - unintended_columns
+      - stale_replication_target
+      - schema_drift
+      - no_row_level_filter
+      - missing_retention
+    required_checks:
+      - source_table_allowlist
+      - field_minimization
+      - schema_drift_detection
+      - row_filter_validation
+      - replication_target_review
+      - access_logging
+      - retention_policy
+    default_risk: medium
+
+  - id: MLC-WAREHOUSE-SHARING
+    name: Data warehouse, clean room, and secure share mechanisms
+    description: Platform-level dataset sharing that may not create a file but still exposes data to another account, tenant, partner, or consumer.
+    common_terms:
+      - Snowflake Secure Data Sharing
+      - Snowflake share
+      - Snowflake data clean room
+      - Databricks Delta Sharing
+      - Databricks clean room
+      - BigQuery Analytics Hub
+      - BigQuery authorized views
+      - Redshift data sharing
+      - Lakehouse Federation
+      - data marketplace listing
+      - data clean room
+    typical_risks:
+      - consumer_account_mismatch
+      - overbroad_view
+      - row_policy_gap
+      - masking_policy_gap
+      - stale_share
+      - uncontrolled_downstream_use
+    required_checks:
+      - consumer_allowlist
+      - shared_object_inventory
+      - row_and_column_policy_review
+      - masking_policy_review
+      - permitted_use_review
+      - access_monitoring
+      - share_expiration_or_review_date
+    default_risk: high
+
+  - id: MLC-BI-REPORTING-EXPORTS
+    name: BI dashboards, extracts, subscriptions, and report exports
+    description: Movement through dashboards, emailed reports, scheduled subscriptions, embedded analytics, extracts, and downloads.
+    common_terms:
+      - Tableau extract
+      - Tableau subscription
+      - Power BI export
+      - Power BI subscription
+      - Paginated report
+      - Looker download
+      - Looker schedule
+      - Qlik export
+      - dashboard export
+      - CSV download
+      - Excel export
+      - report subscription
+    typical_risks:
+      - report_sent_to_wrong_audience
+      - export_contains_row_level_sensitive_data
+      - dashboard_rls_gap
+      - email_subscription_leak
+      - extract_stored_unmanaged
+    required_checks:
+      - audience_allowlist
+      - row_level_security_review
+      - export_controls
+      - subscription_recipient_review
+      - small_cell_review
+      - download_logging
+      - dashboard_owner
+    default_risk: medium
+
+  - id: MLC-COLLAB-FILE-SHARING
+    name: Collaboration and file sharing platforms
+    description: Business-user-controlled file sharing, document libraries, workspaces, folders, and links.
+    common_terms:
+      - SharePoint
+      - OneDrive
+      - Google Drive
+      - Box
+      - Dropbox
+      - Teams files
+      - Slack file upload
+      - Confluence attachment
+      - Notion upload
+      - shared folder
+      - shared link
+      - document library
+    typical_risks:
+      - external_link_enabled
+      - wrong_group_access
+      - inherited_permissions
+      - anonymous_link
+      - unmanaged_download
+      - stale_access
+      - sensitive_file_preview
+    required_checks:
+      - sharing_permission_review
+      - external_access_review
+      - link_expiration
+      - group_membership_review
+      - download_or_export_controls
+      - sensitivity_label_or_classification
+      - retention_policy
+    default_risk: high
+
+  - id: MLC-MESSAGING-QUEUES-STREAMS
+    name: Messaging, queue, stream, and event layers
+    description: Data movement through events, queues, topics, subscriptions, and streaming platforms.
+    common_terms:
+      - Kafka
+      - Kafka topic
+      - RabbitMQ
+      - ActiveMQ
+      - AWS SQS
+      - AWS SNS
+      - Amazon Kinesis
+      - Google Pub/Sub
+      - Azure Event Hubs
+      - Azure Service Bus
+      - event stream
+      - message queue
+      - topic subscription
+    typical_risks:
+      - sensitive_payload_in_event
+      - overbroad_consumer_group
+      - uncontrolled_subscription
+      - message_retention_gap
+      - dead_letter_queue_exposure
+      - schema_registry_gap
+    required_checks:
+      - topic_or_queue_classification
+      - producer_consumer_inventory
+      - payload_schema_review
+      - subscription_allowlist
+      - retention_and_dlq_policy
+      - encryption_and_authentication
+      - monitoring_and_replay_controls
+    default_risk: high
+
+  - id: MLC-HEALTHCARE-INTERFACES
+    name: Healthcare, pharmacy, payer, and clinical data interfaces
+    description: Healthcare-specific movement layers used for claims, eligibility, clinical, pharmacy, provider, member, or patient data.
+    common_terms:
+      - HL7
+      - FHIR
+      - X12
+      - EDI 837
+      - EDI 835
+      - EDI 270
+      - EDI 271
+      - NCPDP
+      - clearinghouse
+      - claims feed
+      - eligibility feed
+      - pharmacy feed
+      - ADT interface
+      - CCD
+      - C-CDA
+      - interface engine
+      - Mirth
+      - Rhapsody
+      - Corepoint
+    typical_risks:
+      - PHI_misdirection
+      - member_or_patient_mismatch
+      - payer_client_id_mismatch
+      - stale_trading_partner_config
+      - missing_BAA_or_trading_partner_review
+      - uncontrolled_test_data
+    required_checks:
+      - BAA_or_contract_reference
+      - trading_partner_allowlist
+      - payer_or_client_id_validation
+      - message_schema_validation
+      - PHI_minimum_necessary_review
+      - route_validation
+      - delivery_acknowledgement
+      - reject_or_error_handling
+    default_risk: critical
+
+  - id: MLC-EDI-B2B
+    name: EDI, AS2, B2B, and trading partner exchanges
+    description: Business-to-business exchanges, partner routes, acknowledgements, and transaction files.
+    common_terms:
+      - EDI
+      - AS2
+      - trading partner
+      - partner mailbox
+      - VAN
+      - value added network
+      - X12
+      - EDIFACT
+      - 997 acknowledgement
+      - 999 acknowledgement
+      - 277CA
+      - partner route
+      - B2B gateway
+    typical_risks:
+      - wrong_trading_partner
+      - missing_acknowledgement
+      - stale_partner_profile
+      - transaction_set_mismatch
+      - rejected_file_not_handled
+    required_checks:
+      - trading_partner_profile_review
+      - transaction_set_validation
+      - route_validation
+      - acknowledgement_monitoring
+      - reject_workflow
+      - partner_certificate_review
+      - manifest_or_control_number_tracking
+    default_risk: high
+
+  - id: MLC-EMAIL-MANUAL
+    name: Email, local files, removable media, and manual movement
+    description: High-risk manual movement paths outside controlled engineering or transfer workflows.
+    common_terms:
+      - email attachment
+      - Outlook attachment
+      - Gmail attachment
+      - local desktop
+      - Downloads folder
+      - USB drive
+      - thumb drive
+      - manual upload
+      - drag and drop
+      - copy paste
+      - screenshot
+      - spreadsheet emailed
+      - zip file
+    typical_risks:
+      - unmanaged_disclosure
+      - wrong_recipient
+      - no_audit_trail
+      - local_retention
+      - no_encryption
+      - no_recall
+      - uncontrolled_copy
+    required_checks:
+      - business_justification
+      - approved_exception
+      - encryption
+      - recipient_validation
+      - deletion_confirmation
+      - incident_or_exception_log
+      - replacement_with_controlled_path
+    default_risk: critical
+    default_action: Block for governed data unless formally approved as an exception.
+
+cross_layer_detection_keywords:
+  verbs:
+    - send
+    - upload
+    - download
+    - export
+    - share
+    - publish
+    - sync
+    - replicate
+    - deliver
+    - push
+    - pull
+    - stage
+    - copy
+    - route
+    - transfer
+    - drop
+    - ingest
+    - extract
+    - unload
+    - subscribe
+    - webhook
+    - feed
+    - stream
+    - distribute
+  objects:
+    - file
+    - folder
+    - bucket
+    - container
+    - endpoint
+    - route
+    - API
+    - queue
+    - topic
+    - report
+    - dashboard
+    - extract
+    - table
+    - view
+    - share
+    - subscription
+    - manifest
+    - SFTP
+    - MOVEit
+
+movement_layer_review_contract:
+  must_identify:
+    - movement_layer_category
+    - tool_or_protocol_name
+    - source_owner
+    - destination_owner
+    - data_classification
+    - whether_external_recipient_is_involved
+    - whether_manual_step_exists
+    - canonical_client_or_recipient_id
+    - route_or_destination_identifier
+    - manifest_or_control_record
+    - approval_gate
+    - log_or_evidence_location
+    - failure_or_recall_process
+  must_flag:
+    - manual_label_or_free_text_routing
+    - missing_recipient_allowlist
+    - mismatch_between_file_name_and_client_id
+    - mismatch_between_folder_and_manifest
+    - missing_delivery_confirmation
+    - sensitive_data_in_unmanaged_layer
+    - broad_external_sharing_link
+    - unapproved_production_data_export
+    - stale_route_or_partner_profile
+    - missing_owner_for_service_account_or_job
+
+standard_output_template: |
+  ## Data Movement Layer Review
+
+  ### Summary
+  - Movement layer:
+  - Category:
+  - Source:
+  - Destination / Recipient:
+  - Internal or external movement:
+  - Data classification:
+  - Manual step present:
+  - Risk rating:
+
+  ### Movement Surface Detection
+  | Detected Term | Category | Why It Matters |
+  |---|---|---|
+
+  ### Required Control Review
+  | Control | Status | Evidence | Gap |
+  |---|---|---|---|
+
+  ### Last-Mile Risk Review
+  | Risk | Finding | Required Action |
+  |---|---|---|
+
+  ### Recommendation
+  - Go/No-Go:
+  - Required remediation:
+  - Reviewer routing:
