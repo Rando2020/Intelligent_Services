@@ -1,0 +1,602 @@
+version: "0.1.0"
+last_updated: "2026-05-28"
+
+purpose: >
+  Defines data and development engineering governance rules for tabular data inputs,
+  SQL outputs, Excel submissions, pipelines, architecture handoffs, transformation logic,
+  delivery jobs, and last-mile file movement. The intent is to help engineers build safely
+  even when they are not compliance specialists.
+
+non_legal_advice_notice: >
+  This rule pack provides operational and engineering controls. It does not provide legal,
+  security, privacy, or compliance approval.
+
+core_principles:
+  - id: DATAENG-PRINCIPLE-001
+    name: Data classification before development
+    rule: >
+      Every submitted Excel table, SQL extract, CSV, database table, view, staging table,
+      test dataset, file delivery, or dashboard dataset must be classified before use.
+
+  - id: DATAENG-PRINCIPLE-002
+    name: Engineering metadata is preferred over sensitive values
+    rule: >
+      Track row counts, checksums, schema versions, batch IDs, surrogate keys, validation results,
+      file manifests, run IDs, and delivery statuses instead of exposing sensitive record values.
+
+  - id: DATAENG-PRINCIPLE-003
+    name: Minimum necessary data movement
+    rule: >
+      Only move, expose, transform, or persist the minimum fields required for the approved business purpose.
+
+  - id: DATAENG-PRINCIPLE-004
+    name: Last-mile delivery is part of the control boundary
+    rule: >
+      Outbound delivery tools, SFTP folders, MOVEit jobs, recipient lists, file labels, file manifests,
+      naming conventions, client IDs, routing tables, and release approvals are governed controls.
+      A correct pipeline can still fail compliance if the last-mile delivery layer is wrong.
+
+  - id: DATAENG-PRINCIPLE-005
+    name: Do not trust labels alone
+    rule: >
+      Client names, folder labels, file names, manually typed labels, and spreadsheet tabs must not be
+      treated as sufficient proof of recipient or data ownership. Use canonical IDs, allowlists, manifests,
+      and system-derived routing checks.
+
+  - id: DATAENG-PRINCIPLE-006
+    name: Enrichment must not create uncontrolled sensitivity
+    rule: >
+      Derived fields, flags, scores, geocodes, segmentation, analytics joins, and model features must be
+      evaluated for privacy, re-identification, regulatory, and permitted-use impact.
+
+data_input_score_model:
+  max_score: 100
+  passing_threshold: 85
+  conditional_threshold: 75
+  audit_ready_threshold: 92
+  scoring_method: >
+    Score the submitted dataset and its intended engineering use. Apply gate caps after calculating the raw score.
+    For regulated or external-delivery workflows, use the lower of the data input score and the pipeline control score.
+  rating_bands:
+    - id: DATA-AUDIT-READY
+      min_score: 92
+      max_score: 100
+      label: Audit-ready input
+      meaning: Dataset is classified, minimized, controlled, validated, and safe for the approved engineering purpose.
+    - id: DATA-CONTROLLED
+      min_score: 85
+      max_score: 91
+      label: Controlled input
+      meaning: Dataset is usable with normal controls, but minor evidence or documentation gaps remain.
+    - id: DATA-CONDITIONAL
+      min_score: 75
+      max_score: 84
+      label: Conditional use
+      meaning: Dataset may be used only with named constraints, remediation, or supervised handling.
+    - id: DATA-RESTRICTED
+      min_score: 50
+      max_score: 74
+      label: Restricted or remediation required
+      meaning: Dataset must not be used in broad development, testing, AI prompts, shared workspaces, or external delivery until remediated.
+    - id: DATA-BLOCKED
+      min_score: 0
+      max_score: 49
+      label: Blocked
+      meaning: Dataset contains uncontrolled sensitive data, unclear ownership, prohibited fields, or unsafe delivery/routing risk.
+
+mandatory_gate_caps:
+  - id: DATA-GATE-UNCLASSIFIED
+    name: Dataset is unclassified
+    condition: Dataset does not identify data sensitivity, owner, source, intended use, or regulatory overlay status.
+    cap_final_score_at: 74
+    severity: critical
+    required_action: Classify dataset and complete owner/source/intended-use review before engineering use.
+
+  - id: DATA-GATE-SENSITIVE-IN-UNMANAGED-TOOL
+    name: Sensitive data in unmanaged tool
+    condition: PHI, PCI, credentials, secrets, sensitive personal data, or client confidential data is present in unmanaged spreadsheets, email, public repos, tickets, prompts, chat logs, screenshots, or local files.
+    cap_final_score_at: 49
+    severity: critical
+    required_action: Stop use, redact/remove sensitive data, move to approved storage, and escalate to Privacy/Security/Compliance.
+
+  - id: DATA-GATE-NO-OWNER
+    name: Missing data owner or system owner
+    condition: Dataset has no accountable data owner, system owner, or steward.
+    cap_final_score_at: 69
+    severity: high
+    required_action: Assign accountable owner before transformation or delivery.
+
+  - id: DATA-GATE-NO-MINIMUM-NECESSARY
+    name: No field minimization review
+    condition: Dataset contains more fields than needed and no minimum necessary or data minimization review exists.
+    cap_final_score_at: 79
+    severity: high
+    required_action: Remove non-required fields or document approved justification.
+
+  - id: DATA-GATE-NO-DELIVERY-CONTROL
+    name: No outbound delivery control
+    condition: Dataset will be delivered externally but lacks recipient allowlist, manifest, file naming control, checksum, approval gate, and route validation.
+    cap_final_score_at: 69
+    severity: critical
+    required_action: Add last-mile delivery controls before external transfer.
+
+  - id: DATA-GATE-WRONG-RECIPIENT-RISK
+    name: Wrong-recipient or wrong-client routing risk
+    condition: File delivery depends on manual labels, free-text client names, copied folders, or human-selected destinations without canonical ID validation.
+    cap_final_score_at: 59
+    severity: critical
+    required_action: Require canonical client ID, recipient allowlist, outbound quarantine, approval, and post-delivery confirmation.
+
+  - id: DATA-GATE-PROHIBITED-FIELDS
+    name: Prohibited fields present for intended use
+    condition: Dataset includes fields that are prohibited for the declared use case, such as CVV, full PAN, passwords, tokens, private keys, or unnecessary direct identifiers.
+    cap_final_score_at: 49
+    severity: critical
+    required_action: Remove prohibited fields, rotate exposed credentials if applicable, and escalate.
+
+scoring_dimensions:
+  - id: DATAENG-SCORE-001
+    name: Dataset ownership, source, and purpose
+    weight: 10
+    intent: Confirms the dataset has a known owner, source system, business purpose, and permitted use.
+    full_points:
+      - Data owner, system owner, source system, extract method, intended use, and requesting team are documented.
+      - Dataset use aligns to approved project purpose.
+    partial_points:
+      - Owner or source exists but purpose or permitted use is vague.
+    zero_points:
+      - Dataset appears without owner, source, or intended use.
+    required_evidence:
+      - data_owner
+      - system_owner
+      - source_system
+      - intended_use
+      - requesting_team
+      - permitted_use_reference
+
+  - id: DATAENG-SCORE-002
+    name: Field-level classification and sensitivity
+    weight: 14
+    intent: Confirms each column is classified before engineering use.
+    full_points:
+      - Each field has a classification such as public, internal, confidential, personal data, PHI, PCI, credential, secret, quasi-identifier, derived, or aggregate.
+      - Free-text fields are flagged for special review.
+    partial_points:
+      - Dataset-level classification exists but field-level classification is incomplete.
+    zero_points:
+      - No field-level classification exists.
+    required_evidence:
+      - data_dictionary
+      - field_classification_matrix
+      - sensitive_field_flags
+      - free_text_field_review
+
+  - id: DATAENG-SCORE-003
+    name: Data minimization and permitted tracking
+    weight: 12
+    intent: Confirms engineers only track what is necessary and safe.
+    full_points:
+      - Dataset removes unnecessary direct identifiers, quasi-identifiers, free text, sensitive fields, and high-cardinality personal attributes.
+      - Tracking uses metadata where possible.
+    partial_points:
+      - Some minimization occurred but unnecessary fields remain without justification.
+    zero_points:
+      - Dataset includes broad fields without minimization or justification.
+    required_evidence:
+      - minimum_necessary_review
+      - removed_field_list
+      - approved_field_list
+      - tracking_metadata_plan
+
+  - id: DATAENG-SCORE-004
+    name: Obfuscation, masking, tokenization, and de-identification controls
+    weight: 12
+    intent: Confirms sensitive values are transformed safely for the engineering context.
+    full_points:
+      - Direct identifiers are masked, tokenized, hashed with approved salt/pepper, or replaced with surrogate keys.
+      - Date, geography, and small-cell risk are generalized where needed.
+      - Re-identification risk is reviewed for derived or joined data.
+    partial_points:
+      - Some masking exists, but method, salt management, or re-identification review is unclear.
+    zero_points:
+      - Sensitive values are exposed directly without approved reason.
+    required_evidence:
+      - masking_rules
+      - tokenization_or_hashing_method
+      - surrogate_key_design
+      - date_or_geo_generalization_rule
+      - reidentification_risk_review
+
+  - id: DATAENG-SCORE-005
+    name: Data quality, schema, and validation controls
+    weight: 10
+    intent: Confirms data is structurally valid and safe to process.
+    full_points:
+      - Schema, required fields, allowed values, null thresholds, row counts, uniqueness checks, referential checks, and reconciliation totals are defined.
+    partial_points:
+      - Basic validation exists but thresholds or reconciliation are incomplete.
+    zero_points:
+      - No validation controls exist.
+    required_evidence:
+      - schema_definition
+      - validation_rules
+      - control_totals
+      - row_count_checks
+      - null_thresholds
+      - exception_report
+
+  - id: DATAENG-SCORE-006
+    name: Environment separation and safe test data
+    weight: 10
+    intent: Confirms production data is not casually reused in development or testing.
+    full_points:
+      - Development, QA, staging, and production are separated.
+      - Test data is synthetic, tokenized, de-identified, or explicitly approved for controlled use.
+      - Access differs by environment.
+    partial_points:
+      - Environments are separated but test data controls are unclear.
+    zero_points:
+      - Production sensitive data is used broadly in development or testing.
+    required_evidence:
+      - environment_matrix
+      - test_data_strategy
+      - production_data_exception_approval
+      - access_by_environment
+
+  - id: DATAENG-SCORE-007
+    name: Pipeline lineage, transformation, and reproducibility
+    weight: 10
+    intent: Confirms data transformations are traceable and reproducible.
+    full_points:
+      - Pipeline records run ID, source version, transformation logic, code version, dependency versions, lineage, and output manifest.
+    partial_points:
+      - Transformation logic exists but lineage or code version evidence is incomplete.
+    zero_points:
+      - Outputs cannot be traced back to source and transformation version.
+    required_evidence:
+      - lineage_record
+      - run_id
+      - code_version
+      - transformation_spec
+      - source_version
+      - output_manifest
+
+  - id: DATAENG-SCORE-008
+    name: Access, logging, and operational monitoring
+    weight: 10
+    intent: Confirms access and system activity are controlled and reviewable.
+    full_points:
+      - Access is role-based and approved; jobs, extracts, table reads, writes, exports, and delivery actions are logged and monitored.
+    partial_points:
+      - Access controls exist but log review or service account ownership is unclear.
+    zero_points:
+      - Broad access or no audit logging exists for governed data.
+    required_evidence:
+      - role_access_matrix
+      - service_account_owner
+      - approval_record
+      - audit_log_location
+      - monitoring_alerts
+
+  - id: DATAENG-SCORE-009
+    name: External delivery and last-mile release controls
+    weight: 14
+    intent: Confirms final delivery cannot route the wrong data to the wrong party.
+    full_points:
+      - External delivery uses canonical client ID, approved recipient allowlist, route validation, outbound quarantine, manifest, checksum, two-person or system-enforced release approval, and post-delivery confirmation.
+      - File labels are generated from controlled metadata, not manual names.
+    partial_points:
+      - Secure delivery exists but route validation, approval, or post-delivery confirmation is incomplete.
+    zero_points:
+      - External delivery depends on manual file labeling, manual recipient selection, or uncontrolled folders.
+    required_evidence:
+      - delivery_manifest
+      - canonical_client_id
+      - recipient_allowlist
+      - route_validation_log
+      - checksum_or_hash
+      - release_approval
+      - post_delivery_confirmation
+      - outbound_exception_log
+
+  - id: DATAENG-SCORE-010
+    name: Retention, archive, deletion, and incident rollback
+    weight: 8
+    intent: Confirms data is not retained forever and errors can be contained.
+    full_points:
+      - Retention, archive, deletion, purge, legal hold, rollback, recall, and incident escalation steps are defined.
+    partial_points:
+      - Retention exists but deletion, recall, or rollback is unclear.
+    zero_points:
+      - No retention or disposal expectation exists.
+    required_evidence:
+      - retention_rule
+      - deletion_or_purge_process
+      - archive_location
+      - legal_hold_rule
+      - recall_or_rollback_process
+      - incident_escalation_path
+
+data_use_policy:
+  allowed_without_special_approval:
+    - Synthetic data with no relationship to real individuals, clients, accounts, cards, patients, members, or transactions.
+    - Public data with documented source and license/terms review where needed.
+    - Aggregated operational metadata where small-cell or re-identification risk is not present.
+    - Schema-only examples with fake values.
+    - Validation metadata such as row counts, batch IDs, file hashes, null rates, and exception counts.
+
+  allowed_with_controls:
+    - De-identified or anonymized data with documented method and re-identification review.
+    - Tokenized or pseudonymized data where the lookup table is separately controlled.
+    - Production data in controlled environments with documented approval and role-based access.
+    - PHI, PCI, or sensitive personal data only when required for approved business purpose and handled under applicable controls.
+    - Client confidential data when covered by contract, access control, and retention rules.
+
+  prohibited_or_blocked_by_default:
+    - CVV, PIN, full magnetic stripe or equivalent sensitive authentication data.
+    - Passwords, API keys, private keys, secrets, tokens, session cookies, or credentials.
+    - Full card numbers outside approved PCI-controlled systems.
+    - Live PHI, PCI, personal data, or confidential client data in public repos, unmanaged tickets, AI prompts, chat logs, screenshots, or email threads.
+    - Free-text fields containing uncontrolled sensitive information unless reviewed and approved.
+    - Datasets whose owner, source, recipient, or intended use is unknown.
+
+permitted_tracking_metadata:
+  safe_or_preferred:
+    - batch_id
+    - run_id
+    - source_system_id
+    - schema_version
+    - row_count
+    - file_hash_or_checksum
+    - control_total
+    - validation_status
+    - exception_count
+    - delivery_status
+    - delivery_timestamp
+    - approved_recipient_id
+    - canonical_client_id
+    - route_id
+    - transformation_version
+    - non-sensitive error_code
+  caution:
+    - exact_dates
+    - small_cell_counts
+    - granular_geography
+    - high_cardinality_ids
+    - rare_diagnosis_or_condition_flags
+    - free_text_notes
+    - member_or_patient_level status flags
+  blocked_without_approval:
+    - names
+    - full_dates_of_birth
+    - social_security_numbers
+    - medical_record_numbers
+    - member_ids_in_unmanaged_contexts
+    - full_card_numbers
+    - CVV_or_PIN
+    - credentials
+    - access_tokens
+    - raw_claim_notes_or_clinical_notes
+
+obfuscation_guidance:
+  direct_identifiers:
+    examples: ["name", "email", "phone", "address", "SSN", "MRN", "member_id", "account_number"]
+    preferred_methods:
+      - Remove when not required.
+      - Replace with surrogate key.
+      - Tokenize using approved token service.
+      - Hash with approved keyed method where re-identification through joining is intended and authorized.
+    cautions:
+      - Unsalted hashes of common identifiers can be reversible by dictionary attack.
+      - Token lookup tables must be more restricted than the working dataset.
+
+  quasi_identifiers:
+    examples: ["date_of_birth", "ZIP", "gender", "rare condition", "small employer group", "specific facility"]
+    preferred_methods:
+      - Generalize date to month, quarter, or year when possible.
+      - Generalize geography to larger region when possible.
+      - Suppress or aggregate small cells.
+      - Review combinations for re-identification risk.
+
+  free_text:
+    examples: ["notes", "comments", "case descriptions", "clinical narrative", "ticket comments"]
+    preferred_methods:
+      - Avoid ingesting free text unless required.
+      - Use redaction before indexing, logging, or AI processing.
+      - Replace examples with synthetic text.
+    cautions:
+      - Free text often contains unexpected PHI, credentials, names, or confidential details.
+
+  derived_fields:
+    examples: ["risk_score", "adherence_flag", "disease_segment", "propensity_score", "SDoH indicator"]
+    preferred_methods:
+      - Document source fields and permitted use.
+      - Evaluate whether the derived field creates new sensitivity.
+      - Limit use to approved purpose.
+      - Avoid external disclosure unless reviewed.
+
+pipeline_lifecycle_stages:
+  - id: STAGE-INTAKE
+    name: Intake and source approval
+    architect_guidance:
+      - Require source owner, data owner, permitted use, regulatory overlay review, and intake manifest.
+      - Do not allow ad hoc spreadsheets to become production sources without owner and validation controls.
+    required_controls:
+      - DATAENG-SCORE-001
+      - DATAENG-SCORE-002
+      - DATAENG-SCORE-003
+
+  - id: STAGE-EXTRACT
+    name: Extract and landing
+    architect_guidance:
+      - Use approved extract paths, encrypted transfer, controlled landing zones, immutable raw zone where appropriate, and access logging.
+      - Never land sensitive extracts in personal folders or unmanaged locations.
+    required_controls:
+      - DATAENG-SCORE-006
+      - DATAENG-SCORE-008
+
+  - id: STAGE-TRANSFORM
+    name: Transform, enrich, and join
+    architect_guidance:
+      - Track transformation version, lineage, join keys, enrichment purpose, re-identification impact, and derived field sensitivity.
+      - Do not enrich data beyond the approved use case.
+    required_controls:
+      - DATAENG-SCORE-004
+      - DATAENG-SCORE-007
+
+  - id: STAGE-VALIDATE
+    name: Validate and reconcile
+    architect_guidance:
+      - Use row counts, control totals, schema checks, null checks, referential integrity, duplicate checks, and exception reports.
+      - Avoid reviewing raw sensitive records unless necessary and approved.
+    required_controls:
+      - DATAENG-SCORE-005
+      - DATAENG-SCORE-009
+
+  - id: STAGE-QA-UAT
+    name: QA and UAT
+    architect_guidance:
+      - Use synthetic, masked, tokenized, or minimum necessary data for QA where possible.
+      - If production data is required, restrict access and log review activity.
+    required_controls:
+      - DATAENG-SCORE-006
+      - DATAENG-SCORE-008
+
+  - id: STAGE-RELEASE
+    name: Release and deployment
+    architect_guidance:
+      - Require code review, change ticket, deployment approval, rollback plan, environment validation, and configuration review.
+      - Validate that runtime configuration matches approved client/data route.
+    required_controls:
+      - DATAENG-SCORE-007
+      - DATAENG-SCORE-008
+      - DATAENG-SCORE-010
+
+  - id: STAGE-DELIVERY
+    name: Outbound delivery and last-mile transfer
+    architect_guidance:
+      - Treat MOVEit, SFTP, shared folders, outbound APIs, file labels, routing configs, and recipient lists as production control surfaces.
+      - Require canonical client ID, route allowlist, file manifest, checksum, outbound quarantine, release approval, and delivery confirmation.
+      - Prevent free-text client name labels from driving routing.
+    required_controls:
+      - DATAENG-SCORE-009
+      - DATAENG-SCORE-010
+
+  - id: STAGE-ARCHIVE-DELETE
+    name: Archive, retention, and deletion
+    architect_guidance:
+      - Retain only according to approved schedule. Confirm deletion, archive, and legal hold handling.
+      - Include delivered files, rejects, temp files, logs, staging tables, and debug extracts.
+    required_controls:
+      - DATAENG-SCORE-010
+
+last_mile_delivery_controls:
+  required_for_external_delivery:
+    - id: LMD-001
+      name: Canonical recipient mapping
+      rule: >
+        Route files using canonical client IDs and approved recipient IDs, not free-text client names or manually named folders.
+    - id: LMD-002
+      name: File manifest
+      rule: >
+        Each outbound batch must include source system, run ID, file name, canonical client ID, recipient ID, row count, control totals, checksum, delivery route, and approval status.
+    - id: LMD-003
+      name: Outbound quarantine
+      rule: >
+        Files must land in a controlled pre-release location until route validation and approval checks pass.
+    - id: LMD-004
+      name: Recipient allowlist
+      rule: >
+        Delivery must validate destination folder, endpoint, account, or API target against an approved recipient allowlist.
+    - id: LMD-005
+      name: Two-layer approval or automated release gate
+      rule: >
+        External release of governed data must require either two-person approval or a system-enforced release gate using validated metadata.
+    - id: LMD-006
+      name: Post-delivery confirmation
+      rule: >
+        Capture delivery timestamp, destination, checksum, delivery status, and recipient confirmation or system receipt.
+    - id: LMD-007
+      name: Wrong-recipient stop condition
+      rule: >
+        If file label, client ID, destination, manifest, or route validation conflicts, stop delivery and escalate before transfer.
+
+soc2_alignment:
+  note: >
+    SOC 2 alignment is not a substitute for a SOC 2 audit. These mappings are readiness-oriented engineering controls
+    aligned to common SOC 2 themes such as security, availability, processing integrity, confidentiality, and privacy.
+  trust_services_categories:
+    security:
+      relevant_controls:
+        - access control
+        - encryption
+        - logging
+        - secure transfer
+        - service account ownership
+        - vulnerability and incident escalation
+    availability:
+      relevant_controls:
+        - job monitoring
+        - retry and failure handling
+        - rollback
+        - delivery confirmation
+        - disaster recovery expectations
+    processing_integrity:
+      relevant_controls:
+        - row counts
+        - control totals
+        - schema validation
+        - reconciliation
+        - route validation
+        - completeness and accuracy checks
+    confidentiality:
+      relevant_controls:
+        - data minimization
+        - masking
+        - tokenization
+        - recipient allowlist
+        - retention and disposal
+    privacy:
+      relevant_controls:
+        - permitted use
+        - data minimization
+        - consent or lawful basis where applicable
+        - de-identification review
+        - data rights and retention alignment
+
+standard_output_template: |
+  ## Data / Dev Engineering Review Scorecard
+
+  ### Summary
+  - Dataset / pipeline reviewed:
+  - Source system:
+  - Intended use:
+  - Environment:
+  - Raw score:
+  - Final gated score:
+  - Rating:
+  - Go/No-Go:
+
+  ### Failed Gates
+  | Gate ID | Finding | Cap Applied | Required Action |
+  |---|---|---:|---|
+
+  ### Field Classification
+  | Field | Classification | Use Allowed? | Required Handling |
+  |---|---|---|---|
+
+  ### Dimension Scores
+  | Dimension | Weight | Score | Finding | Missing Evidence |
+  |---|---:|---:|---|---|
+
+  ### Pipeline Stage Controls
+  | Stage | Control Status | Risk | Required Action |
+  |---|---|---|---|
+
+  ### Last-Mile Delivery Review
+  | Control | Status | Evidence | Gap |
+  |---|---|---|---|
+
+  ### Remediation Backlog
+  | Priority | Action | Owner | Due Date | Acceptance Criteria |
+  |---|---|---|---|---|
