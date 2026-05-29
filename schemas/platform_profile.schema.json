@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/platform_profile.schema.json",
+  "title": "Platform Control Profile Schema",
+  "description": "Schema for tool/platform-specific governance control profiles used by the governed delivery agent.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "platform_type",
+    "detection_keywords",
+    "default_risk_triggers",
+    "required_checks",
+    "required_evidence",
+    "launch_blockers",
+    "recommended_tickets"
+  ],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "platform_type": {
+      "type": "string",
+      "enum": [
+        "data_warehouse",
+        "transformation_layer",
+        "file_mover",
+        "reporting_layer",
+        "api_integration",
+        "cloud_storage",
+        "workflow_orchestration",
+        "source_control",
+        "work_management",
+        "unknown"
+      ]
+    },
+    "description": {"type": "string"},
+    "maturity_scale": {
+      "type": "object",
+      "properties": {
+        "min_level": {"type": "string"},
+        "max_level": {"type": "string"},
+        "supports_l6_org_specific": {"type": "boolean"}
+      }
+    },
+    "detection_keywords": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "default_risk_triggers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "required_checks": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "required_evidence": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "launch_blockers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "recommended_tickets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["title", "owner_role", "purpose"],
+        "properties": {
+          "title": {"type": "string"},
+          "owner_role": {"type": "string"},
+          "purpose": {"type": "string"},
+          "launch_blocker": {"type": "boolean"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
