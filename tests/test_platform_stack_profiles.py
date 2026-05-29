@@ -30,6 +30,7 @@ def test_platform_stack_profile_detection(tmp_path):
     )
 
     assert "Platform profile outputs generated" in result.stdout
+    assert "Platform profile controls injected into package" in result.stdout
 
     report_path = output_dir / "platform_profile_report.json"
     assert report_path.exists()
@@ -60,3 +61,17 @@ def test_platform_stack_profile_detection(tmp_path):
 
     api = next(profile for profile in report["detected_profiles"] if profile["id"] == "PLATFORM-API-INTEGRATION")
     assert "payload_schema_reviewed" in api["required_checks"]
+
+    tickets = json.loads((output_dir / "generated_ticket_hierarchy.json").read_text(encoding="utf-8"))
+    ticket_titles = {ticket["title"] for ticket in tickets}
+    assert "Platform Control Profile Governance" in ticket_titles
+    assert "Review Snowflake data classification and object tags" in ticket_titles
+    assert "Review dbt model ownership, tests, and lineage" in ticket_titles
+    assert "Validate reporting access and row-level security" in ticket_titles
+    assert "Review API endpoint, authentication, and payload contract" in ticket_titles
+
+    evidence_packet = json.loads((output_dir / "evidence_packet.json").read_text(encoding="utf-8"))
+    evidence_areas = {item["evidence_area"] for item in evidence_packet["evidence_items"]}
+    assert "Platform profile: Snowflake Control Profile" in evidence_areas
+    assert "Platform profile: dbt Transformation Control Profile" in evidence_areas
+    assert "Platform profile: Tableau and Power BI Reporting Control Profile" in evidence_areas
