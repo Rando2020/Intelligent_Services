@@ -1,0 +1,156 @@
+# scoring_rules.yaml
+# Single source of truth for governed-delivery scoring.
+# Replaces the magic numbers currently hardcoded in build_scorecard() /
+# build_launch_blockers() in governed_delivery_cli.py.
+#
+# Engine: rule_engine.py reads this file. Changing a weight, band, cap, or
+# blocker here changes behavior WITHOUT touching Python.
+
+version: "1.0"
+
+# ---------------------------------------------------------------------------
+# Overall score model
+# Mirrors current logic: start from a base, subtract for blockers & criticals,
+# clamp to [0,100]. All four numbers were previously hardcoded as 82 / 2 / 2.
+# ---------------------------------------------------------------------------
+overall:
+  base_score: 82
+  penalty_per_blocker: 2
+  penalty_per_critical_finding: 2
+  min: 0
+  max: 100
+  rating:
+    # First matching condition wins, top to bottom.
+    - when: has_blockers
+      value: at_risk
+    - when: always
+      value: controlled
+  launch_position:
+    - when: has_blockers
+      value: not_launchable
+    - when: always
+      value: launchable_with_controls
+
+# ---------------------------------------------------------------------------
+# Category / dimension weights (from the Data Input Scoring Model table).
+# Weights sum to 100. The engine validates this on load.
+# ---------------------------------------------------------------------------
+dimensions:
+  - id: ownership_source_purpose
+    label: "Dataset ownership, source, and purpose"
+    weight: 10
+  - id: field_classification
+    label: "Field-level classification and sensitivity"
+    weight: 14
+  - id: minimization
+    label: "Data minimization and permitted tracking"
+    weight: 12
+  - id: obfuscation
+    label: "Obfuscation, masking, tokenization, de-identification"
+    weight: 12
+  - id: data_quality
+    label: "Data quality, schema, and validation controls"
+    weight: 10
+  - id: environment_separation
+    label: "Environment separation and safe test data"
+    weight: 10
+  - id: lineage
+    label: "Pipeline lineage, transformation, reproducibility"
+    weight: 10
+  - id: access_logging
+    label: "Access, logging, and operational monitoring"
+    weight: 10
+  - id: external_delivery
+    label: "External delivery and last-mile release controls"
+    weight: 14
+  - id: retention
+    label: "Retention, archive, deletion, incident rollback"
+    weight: 8
+
+# ---------------------------------------------------------------------------
+# Rating bands (from the Rating Bands table). Evaluated high → low; first
+# band whose `min` the score meets or exceeds wins.
+# ---------------------------------------------------------------------------
+rating_bands:
+  - min: 92
+    rating: "Audit-ready input"
+    meaning: "Classified, minimized, controlled, validated, safe for approved purpose."
+  - min: 85
+    rating: "Controlled input"
+    meaning: "Usable with normal controls; minor evidence/documentation gaps."
+  - min: 75
+    rating: "Conditional use"
+    meaning: "Use only with constraints, remediation, or supervised handling."
+  - min: 50
+    rating: "Restricted / remediation required"
+    meaning: "Do not use broadly in dev, test, AI prompts, shared spaces, or delivery."
+  - min: 0
+    rating: "Blocked"
+    meaning: "Uncontrolled sensitive data, unclear ownership, prohibited fields, or unsafe routing."
+
+# ---------------------------------------------------------------------------
+# Mandatory gate caps (from the Mandatory Gate Caps table).
+# If a gate's condition is true, the FINAL score cannot exceed `cap`.
+# `condition` names a predicate the engine knows how to evaluate against intake.
+# ---------------------------------------------------------------------------
+gate_caps:
+  - id: dataset_unclassified
+    condition: dataset_unclassified
+    cap: 74
+    reason: "No sensitivity, owner, source, intended use, or overlay status."
+  - id: sensitive_in_unmanaged_tool
+    condition: sensitive_data_in_unmanaged_context
+    cap: 49
+    reason: "PHI/PCI/secrets/credentials/confidential data in unmanaged context."
+  - id: missing_data_owner
+    condition: no_accountable_owner
+    cap: 69
+    reason: "No accountable owner or steward."
+  - id: no_minimization_review
+    condition: no_minimization_review
+    cap: 79
+    reason: "More fields than needed and no justification."
+  - id: no_outbound_control
+    condition: no_outbound_delivery_control
+    cap: 69
+    reason: "External delivery lacks allowlist, manifest, checksum, approval, or route validation."
+  - id: wrong_recipient_risk
+    condition: wrong_recipient_risk
+    cap: 49
+    reason: "Routing depends on manual labels, free-text names, or human-selected destinations."
+
+# ---------------------------------------------------------------------------
+# Launch blockers (from build_launch_blockers()). Each blocker fires when its
+# `condition` predicate is true. This replaces the Python list-of-tuples.
+# ---------------------------------------------------------------------------
+launch_blockers:
+  - id: legal_use_unapproved
+    condition: legal_use_not_approved
+    blocker: "Permitted-use / Legal approval not confirmed"
+    required_resolution: "Obtain Legal and permitted-use approval before outbound data movement."
+    owner_role: "Legal / Privacy"
+    evidence_required: [legal_approval, permitted_use_record]
+  - id: destination_unverified
+    condition: destination_not_verified
+    blocker: "Delivery destination not verified"
+    required_resolution: "Confirm destination against an approved allowlist."
+    owner_role: "Implementation / Operations"
+    evidence_required: [destination_allowlist]
+  - id: recipient_access_unverified
+    condition: recipient_access_not_verified
+    blocker: "Recipient access / permissions not verified"
+    required_resolution: "Verify recipient identity and access before release."
+    owner_role: "Security / Data Owner"
+    evidence_required: [recipient_access_review]
+  - id: no_test_delivery
+    condition: no_production_equivalent_test
+    blocker: "No production-equivalent test delivery"
+    required_resolution: "Execute a production-equivalent test delivery and capture evidence."
+    owner_role: "QA / Platform Operations"
+    evidence_required: [test_delivery_log, delivery_receipt, qa_validation]
+  - id: runbook_unconfirmed
+    condition: runbook_not_confirmed
+    blocker: "Operational runbook not confirmed"
+    required_resolution: "Create runbook with cadence, owner, monitoring, exception handling, pause/rollback."
+    owner_role: "Implementation / Operations"
+    evidence_required: [runbook]
