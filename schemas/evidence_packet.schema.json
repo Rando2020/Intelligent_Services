@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/evidence_packet.schema.json",
+  "title": "Governed Delivery Evidence Packet Schema",
+  "description": "Structured evidence checklist for proving launch readiness across business, legal, data, security, QA, file mover, operations, and release controls.",
+  "type": "object",
+  "required": ["packet_id", "request_title", "evidence_items", "launch_decision"],
+  "properties": {
+    "packet_id": {"type": "string"},
+    "request_title": {"type": "string"},
+    "client_or_partner": {"type": "string"},
+    "program_or_workstream": {"type": "string"},
+    "created_at": {"type": "string"},
+    "evidence_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["evidence_area", "required_artifact", "owner_role", "status", "launch_blocker"],
+        "properties": {
+          "evidence_area": {"type": "string"},
+          "required_artifact": {"type": "string"},
+          "owner_role": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["missing", "requested", "in_review", "approved", "rejected", "accepted_risk", "not_applicable"]
+          },
+          "launch_blocker": {"type": "boolean"},
+          "evidence_link": {"type": "string"},
+          "decision_notes": {"type": "string"},
+          "approved_by": {"type": "string"},
+          "approved_at": {"type": "string"},
+          "expires_or_review_by": {"type": "string"}
+        }
+      }
+    },
+    "sensitive_data_warning": {"type": "string"},
+    "open_blockers": {"type": "array", "items": {"type": "string"}},
+    "accepted_risks": {"type": "array", "items": {"type": "string"}},
+    "launch_decision": {
+      "type": "string",
+      "enum": ["approved", "approved_with_risk_acceptance", "blocked", "requires_review", "unknown"]
+    },
+    "final_approvers": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
