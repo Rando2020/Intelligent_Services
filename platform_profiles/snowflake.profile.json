@@ -1,0 +1,100 @@
+{
+  "id": "PLATFORM-SNOWFLAKE",
+  "name": "Snowflake Control Profile",
+  "platform_type": "data_warehouse",
+  "description": "Control profile for Snowflake data warehouse, data sharing, stages, unloads, access, masking, and governance workflows.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "snowflake",
+    "snowpipe",
+    "snowpark",
+    "warehouse",
+    "database",
+    "schema",
+    "stage",
+    "external stage",
+    "stream",
+    "task",
+    "share",
+    "data share",
+    "unload",
+    "copy into"
+  ],
+  "default_risk_triggers": [
+    "sensitive_data",
+    "production_access",
+    "external_sharing",
+    "data_unloading",
+    "cross_client_data",
+    "regulated_data",
+    "service_account_access"
+  ],
+  "required_checks": [
+    "data_owner_confirmed",
+    "system_owner_confirmed",
+    "database_schema_table_identified",
+    "field_level_classification",
+    "object_tags_reviewed",
+    "masking_policy_reviewed",
+    "row_access_policy_reviewed",
+    "role_access_reviewed",
+    "service_account_reviewed",
+    "query_or_access_history_reviewed",
+    "lineage_or_dependency_reviewed",
+    "stage_usage_reviewed",
+    "unload_export_reviewed",
+    "retention_reviewed"
+  ],
+  "required_evidence": [
+    "approved_field_list",
+    "role_access_matrix",
+    "masking_policy_reference",
+    "row_access_policy_reference",
+    "object_tag_evidence",
+    "query_or_access_history_review",
+    "lineage_reference",
+    "data_sharing_approval",
+    "unload_or_export_approval",
+    "retention_reference"
+  ],
+  "launch_blockers": [
+    "sensitive_data_without_classification",
+    "external_share_without_approval",
+    "production_data_without_access_review",
+    "masking_required_but_not_applied",
+    "row_filtering_required_but_not_applied",
+    "unload_export_without_destination_control",
+    "service_account_without_owner"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Review Snowflake data classification and object tags",
+      "owner_role": "Data Governance / Data Engineering",
+      "purpose": "Confirm database, schema, table, column, and object tag coverage for governed data.",
+      "launch_blocker": true,
+      "evidence_required": ["field_classification_matrix", "object_tag_evidence"]
+    },
+    {
+      "title": "Validate Snowflake access roles and service accounts",
+      "owner_role": "Security / Data Platform",
+      "purpose": "Confirm least privilege for human roles, service accounts, warehouses, and data shares.",
+      "launch_blocker": true,
+      "evidence_required": ["role_access_matrix", "service_account_review"]
+    },
+    {
+      "title": "Review Snowflake masking, row access, and sharing controls",
+      "owner_role": "Security / Data Governance",
+      "purpose": "Confirm masking policies, row access policies, and data sharing approvals where sensitive data is involved.",
+      "launch_blocker": true,
+      "evidence_required": ["masking_policy_reference", "row_access_policy_reference", "data_sharing_approval"]
+    }
+  ],
+  "notes": [
+    "Snowflake should trigger platform-aware controls when it appears in intake, especially for regulated data, external sharing, stages, unloads, or production access.",
+    "L6 allows the organization to define its own required tags, roles, approval flows, naming conventions, and monitoring expectations."
+  ]
+}
