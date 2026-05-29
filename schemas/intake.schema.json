@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/intake.schema.json",
+  "title": "Governed Delivery Intake Schema",
+  "description": "Structured intake format for converting messy business, product, project, legal, data, and delivery requests into governed execution work.",
+  "type": "object",
+  "required": [
+    "request_title",
+    "business_goal",
+    "request_type",
+    "desired_launch_date",
+    "systems_impacted",
+    "data_types",
+    "external_recipient",
+    "file_movement_required"
+  ],
+  "properties": {
+    "request_title": {"type": "string"},
+    "business_goal": {"type": "string"},
+    "request_type": {
+      "type": "string",
+      "enum": [
+        "new_client_onboarding",
+        "program_implementation",
+        "data_delivery",
+        "product_configuration",
+        "data_pipeline",
+        "reporting_export",
+        "api_delivery",
+        "legal_review",
+        "security_review",
+        "qa_validation",
+        "incident_remediation",
+        "documentation",
+        "unknown"
+      ]
+    },
+    "client_or_partner": {"type": "string"},
+    "program_or_workstream": {"type": "string"},
+    "desired_launch_date": {"type": "string"},
+    "is_contractual_date": {"type": "boolean"},
+    "source_of_request": {
+      "type": "string",
+      "enum": ["contract", "sow", "client_email", "roadmap", "incident", "internal_request", "unknown"]
+    },
+    "systems_impacted": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "data_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "public",
+          "internal",
+          "confidential",
+          "personal_data",
+          "phi",
+          "pii",
+          "pci",
+          "credentials_or_secrets",
+          "client_confidential",
+          "claims",
+          "eligibility",
+          "medication",
+          "financial",
+          "aggregate",
+          "synthetic",
+          "unknown"
+        ]
+      }
+    },
+    "contains_phi": {"type": "boolean"},
+    "contains_pii": {"type": "boolean"},
+    "contains_pci": {"type": "boolean"},
+    "contains_credentials_or_secrets": {"type": "boolean"},
+    "external_recipient": {"type": "boolean"},
+    "file_movement_required": {"type": "boolean"},
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "managed_file_transfer",
+        "sftp",
+        "ftps",
+        "api",
+        "webhook",
+        "cloud_storage",
+        "client_portal",
+        "vendor_portal",
+        "reporting_export",
+        "secure_email",
+        "manual_upload",
+        "shared_folder",
+        "unknown",
+        "not_applicable"
+      ]
+    },
+    "delivery_tool_name": {"type": "string"},
+    "source_system": {"type": "string"},
+    "destination_system": {"type": "string"},
+    "destination_confirmed": {"type": "boolean"},
+    "recipient_access_confirmed": {"type": "boolean"},
+    "legal_review_confirmed": {"type": "boolean"},
+    "security_review_confirmed": {"type": "boolean"},
+    "data_governance_review_confirmed": {"type": "boolean"},
+    "qa_review_confirmed": {"type": "boolean"},
+    "production_equivalent_test_completed": {"type": "boolean"},
+    "monitoring_confirmed": {"type": "boolean"},
+    "runbook_confirmed": {"type": "boolean"},
+    "known_dependencies": {"type": "array", "items": {"type": "string"}},
+    "known_approvals": {"type": "array", "items": {"type": "string"}},
+    "unknowns": {"type": "array", "items": {"type": "string"}},
+    "raw_intake_text": {"type": "string"}
+  },
+  "additionalProperties": true
+}
