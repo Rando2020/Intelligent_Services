@@ -1,0 +1,99 @@
+{
+  "id": "PLATFORM-GENERIC-FILE-MOVER",
+  "name": "Generic File Mover Control Profile",
+  "platform_type": "file_mover",
+  "description": "Vendor-neutral control profile for external delivery through managed file transfer, portals, cloud folders, reporting exports, APIs, secure email, shared folders, or manual upload processes.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "file mover",
+    "file transfer",
+    "managed file transfer",
+    "mft",
+    "outbound file",
+    "external delivery",
+    "delivery folder",
+    "client folder",
+    "recipient",
+    "route",
+    "upload",
+    "portal",
+    "secure email",
+    "shared folder",
+    "report export"
+  ],
+  "default_risk_triggers": [
+    "external_recipient",
+    "wrong_recipient_risk",
+    "manual_destination_selection",
+    "sensitive_data",
+    "missing_manifest",
+    "missing_delivery_evidence"
+  ],
+  "required_checks": [
+    "delivery_mechanism_identified",
+    "canonical_client_or_partner_id_confirmed",
+    "destination_validated",
+    "recipient_allowlist_reviewed",
+    "route_configuration_reviewed",
+    "file_naming_convention_reviewed",
+    "payload_ownership_reconciled",
+    "manifest_or_control_totals_defined",
+    "checksum_or_integrity_control_defined",
+    "production_equivalent_test_delivery_completed",
+    "monitoring_and_alerting_reviewed",
+    "pause_or_rollback_plan_defined"
+  ],
+  "required_evidence": [
+    "approved_destination",
+    "recipient_allowlist",
+    "route_config_review",
+    "file_naming_convention",
+    "manifest_or_control_totals",
+    "checksum_or_integrity_control",
+    "test_delivery_log",
+    "delivery_receipt",
+    "monitoring_plan",
+    "runbook",
+    "launch_decision"
+  ],
+  "launch_blockers": [
+    "destination_not_confirmed",
+    "recipient_access_not_confirmed",
+    "route_config_not_reviewed",
+    "file_name_not_reconciled_to_payload",
+    "no_manifest_or_control_totals",
+    "no_production_equivalent_test_delivery",
+    "no_pause_or_rollback_plan"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Confirm approved external delivery mechanism",
+      "owner_role": "Implementation / Platform Operations",
+      "purpose": "Identify approved delivery method and destination for external file or data delivery.",
+      "launch_blocker": true,
+      "evidence_required": ["approved_destination", "delivery_mechanism_approval"]
+    },
+    {
+      "title": "Review recipient allowlist and access permissions",
+      "owner_role": "Security / Platform Operations",
+      "purpose": "Confirm intended recipients, access groups, and service accounts are limited to approved parties.",
+      "launch_blocker": true,
+      "evidence_required": ["recipient_allowlist", "access_review"]
+    },
+    {
+      "title": "Validate file naming, manifest, checksum, and route controls",
+      "owner_role": "Data Engineering / QA",
+      "purpose": "Prove the correct file goes to the correct destination with sufficient reconciliation evidence.",
+      "launch_blocker": true,
+      "evidence_required": ["file_naming_convention", "manifest_or_control_totals", "test_delivery_log"]
+    }
+  ],
+  "notes": [
+    "This profile applies even when no vendor is named.",
+    "The final delivery layer is part of the governed control boundary."
+  ]
+}
