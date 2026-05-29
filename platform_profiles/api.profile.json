@@ -1,0 +1,84 @@
+{
+  "id": "PLATFORM-API-INTEGRATION",
+  "name": "API Integration Control Profile",
+  "platform_type": "api_integration",
+  "description": "Control profile for REST APIs, GraphQL, webhooks, partner endpoints, payload contracts, authentication, logging, and external integrations.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "api",
+    "rest",
+    "graphql",
+    "webhook",
+    "endpoint",
+    "payload",
+    "request body",
+    "response body",
+    "oauth",
+    "token",
+    "client secret",
+    "integration"
+  ],
+  "default_risk_triggers": [
+    "external_endpoint",
+    "sensitive_payload",
+    "authentication_secret",
+    "schema_contract_change",
+    "logging_sensitive_values",
+    "third_party_integration"
+  ],
+  "required_checks": [
+    "api_owner_confirmed",
+    "endpoint_inventory_updated",
+    "auth_method_reviewed",
+    "secret_storage_reviewed",
+    "payload_schema_reviewed",
+    "sensitive_field_logging_reviewed",
+    "rate_limit_and_retry_reviewed",
+    "error_handling_reviewed",
+    "contract_versioning_reviewed",
+    "monitoring_and_alerting_reviewed",
+    "third_party_or_external_endpoint_approved"
+  ],
+  "required_evidence": [
+    "api_owner",
+    "endpoint_specification",
+    "auth_review",
+    "secret_storage_reference",
+    "payload_schema",
+    "logging_review",
+    "monitoring_plan",
+    "third_party_approval",
+    "contract_version_reference"
+  ],
+  "launch_blockers": [
+    "external_endpoint_without_approval",
+    "sensitive_payload_without_field_review",
+    "secrets_in_unmanaged_storage",
+    "logging_sensitive_values_without_masking",
+    "missing_payload_contract",
+    "no_monitoring_for_critical_integration"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Review API endpoint, authentication, and payload contract",
+      "owner_role": "Engineering / Security",
+      "purpose": "Confirm endpoint ownership, authentication method, payload schema, and contract versioning.",
+      "launch_blocker": true,
+      "evidence_required": ["endpoint_specification", "auth_review", "payload_schema"]
+    },
+    {
+      "title": "Validate API logging, monitoring, and sensitive field handling",
+      "owner_role": "Engineering / Security / QA",
+      "purpose": "Confirm logs, errors, retries, and monitoring do not expose sensitive values and support reliable operation.",
+      "launch_blocker": true,
+      "evidence_required": ["logging_review", "monitoring_plan"]
+    }
+  ],
+  "notes": [
+    "API governance should include both payload governance and operational reliability controls."
+  ]
+}
