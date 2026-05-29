@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/scorecard.schema.json",
+  "title": "Governed Delivery Scorecard Schema",
+  "description": "Structured scorecard output for intake quality, timeline risk, data risk, file mover risk, ticket quality, and launch readiness.",
+  "type": "object",
+  "required": ["overall_score", "overall_rating", "launch_position", "category_scores", "findings", "launch_blockers"],
+  "properties": {
+    "overall_score": {"type": "integer", "minimum": 0, "maximum": 100},
+    "overall_rating": {
+      "type": "string",
+      "enum": ["audit_ready", "controlled", "conditional", "at_risk", "blocked", "unknown"]
+    },
+    "launch_position": {
+      "type": "string",
+      "enum": ["launchable", "launchable_with_controls", "not_launchable", "blocked", "requires_review"]
+    },
+    "summary": {"type": "string"},
+    "category_scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category", "rating", "meaning"],
+        "properties": {
+          "category": {"type": "string"},
+          "score": {"type": "integer", "minimum": 0, "maximum": 100},
+          "rating": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4", "L5"]},
+          "meaning": {"type": "string"},
+          "required_action": {"type": "string"}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "finding", "required_action"],
+        "properties": {
+          "id": {"type": "string"},
+          "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+          "finding": {"type": "string"},
+          "required_action": {"type": "string"},
+          "mapped_rule_id": {"type": "string"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "missing_information": {"type": "array", "items": {"type": "string"}},
+    "required_reviews": {"type": "array", "items": {"type": "string"}},
+    "launch_blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["blocker", "required_resolution"],
+        "properties": {
+          "blocker": {"type": "string"},
+          "required_resolution": {"type": "string"},
+          "owner_role": {"type": "string"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "recommended_tickets": {"type": "array", "items": {"type": "string"}},
+    "assumptions_to_challenge": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
