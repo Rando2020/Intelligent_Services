@@ -1,0 +1,78 @@
+{
+  "id": "PLATFORM-DBT",
+  "name": "dbt Transformation Control Profile",
+  "platform_type": "transformation_layer",
+  "description": "Control profile for dbt models, tests, lineage, documentation, exposures, deployments, and transformation governance.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "dbt",
+    "dbt cloud",
+    "dbt model",
+    "model",
+    "seed",
+    "snapshot",
+    "source.yml",
+    "schema.yml",
+    "exposure",
+    "lineage",
+    "transformation"
+  ],
+  "default_risk_triggers": [
+    "transformation_logic_change",
+    "lineage_gap",
+    "missing_tests",
+    "production_model_change",
+    "sensitive_derived_fields"
+  ],
+  "required_checks": [
+    "model_owner_confirmed",
+    "source_and_target_models_identified",
+    "lineage_reviewed",
+    "tests_defined",
+    "documentation_updated",
+    "derived_field_sensitivity_reviewed",
+    "deployment_approval_confirmed",
+    "exposures_or_downstream_dependencies_reviewed",
+    "backfill_or_rebuild_risk_reviewed"
+  ],
+  "required_evidence": [
+    "model_owner",
+    "lineage_graph_or_reference",
+    "dbt_test_results",
+    "model_documentation",
+    "deployment_approval",
+    "downstream_dependency_review",
+    "derived_field_review"
+  ],
+  "launch_blockers": [
+    "production_model_without_owner",
+    "missing_tests_for_critical_model",
+    "lineage_not_reviewed",
+    "sensitive_derived_field_without_approval",
+    "downstream_dependencies_not_reviewed",
+    "deployment_without_approval"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Review dbt model ownership, tests, and lineage",
+      "owner_role": "Analytics Engineering / Data Engineering",
+      "purpose": "Confirm dbt model ownership, tests, lineage, documentation, and downstream dependencies.",
+      "launch_blocker": true,
+      "evidence_required": ["model_owner", "dbt_test_results", "lineage_graph_or_reference"]
+    },
+    {
+      "title": "Validate dbt derived field sensitivity and downstream exposure",
+      "owner_role": "Data Governance / Analytics Engineering",
+      "purpose": "Confirm transformations do not create uncontrolled sensitivity or unapproved downstream exposure.",
+      "launch_blocker": true,
+      "evidence_required": ["derived_field_review", "downstream_dependency_review"]
+    }
+  ],
+  "notes": [
+    "dbt changes should be governed not only as code changes, but as lineage, data quality, documentation, and downstream exposure changes."
+  ]
+}
