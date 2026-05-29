@@ -32,6 +32,7 @@ def test_governed_delivery_package_generation(tmp_path):
 
     assert "Governed delivery package generated" in result.stdout
     assert "Additional platform exports generated" in result.stdout
+    assert "Platform profile outputs generated" in result.stdout
 
     expected_files = [
         "normalized_intake.json",
@@ -43,6 +44,8 @@ def test_governed_delivery_package_generation(tmp_path):
         "ado_export.csv",
         "rally_export.csv",
         "asana_export.csv",
+        "platform_profile_report.json",
+        "platform_profile_report.md",
         "evidence_packet.json",
         "evidence_packet.md",
         "launch_readiness_summary.md",
@@ -55,6 +58,15 @@ def test_governed_delivery_package_generation(tmp_path):
     assert scorecard["overall_rating"] == "at_risk"
     assert scorecard["launch_position"] == "not_launchable"
     assert len(scorecard["launch_blockers"]) >= 1
+
+    platform_report = json.loads((output_dir / "platform_profile_report.json").read_text(encoding="utf-8"))
+    assert platform_report["detected_platform_count"] >= 1
+    assert "maturity_scale" in platform_report
+    assert any(item["level"] == "L6" for item in platform_report["maturity_scale"])
+    assert any(
+        profile["id"] == "PLATFORM-GENERIC-FILE-MOVER"
+        for profile in platform_report["detected_profiles"]
+    )
 
     tickets = json.loads((output_dir / "generated_ticket_hierarchy.json").read_text(encoding="utf-8"))
     assert len(tickets) >= 10
