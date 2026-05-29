@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agile Maturity — Intelligent Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#f7f5f0;font-family:'Archivo',sans-serif;color:#14130f}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 56px}
+  .seclabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#a39a86;margin-bottom:16px}
+  h2{font-size:clamp(28px,4vw,44px);line-height:1.04;font-weight:900;letter-spacing:-.025em;margin-bottom:20px}
+  h2 em{font-family:'Instrument Serif',serif;font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:#36322a;max-width:680px;margin-bottom:14px}
+  .sub2{font-size:15px;line-height:1.5;color:#6a6356;max-width:640px;margin-bottom:32px}
+  .sub2 b{color:#14130f}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+
+  .card{border:1px solid #ddd6c8;border-radius:16px;background:#fff;overflow:hidden}
+  .ch{padding:16px 22px;border-bottom:1px solid #e4ddcf;font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#a39a86}
+
+  /* leanness gauge */
+  .gauge{padding:24px 22px;text-align:center}
+  .gscore{font-size:46px;font-weight:900;letter-spacing:-.02em;background:linear-gradient(110deg,#6d4aff,#1296ad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+  .glabel{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#9a5a08;margin-top:8px}
+  .gtrack{height:9px;background:#f1ede4;border-radius:5px;margin:20px 0 8px;position:relative;overflow:hidden}
+  .gfill{height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#c98a1a,#e0b15e);transition:width 1s ease}
+  .gscale{display:flex;justify-content:space-between;font-size:10px;color:#a39a86;font-family:'Spline Sans Mono',monospace}
+
+  /* coverage rows */
+  .cov{padding:16px 22px}
+  .cvrow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f1ede4;font-size:13px}
+  .cvrow:last-child{border-bottom:none}
+  .cvrow .nm{flex:1;color:#36322a;font-weight:500}
+  .cvrow .who{font-size:11.5px;color:#8a8273;font-family:'Spline Sans Mono',monospace}
+  .pill{font-family:'Spline Sans Mono',monospace;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 9px;border-radius:5px;border:1px solid;flex-shrink:0}
+  .p-ok{color:#0d7d6a;border-color:rgba(31,182,201,.35);background:rgba(31,182,201,.07)}
+  .p-thin{color:#9a5a08;border-color:rgba(224,177,94,.45);background:rgba(224,177,94,.12)}
+  .p-gap{color:#a8345a;border-color:rgba(224,122,154,.45);background:rgba(224,122,154,.1)}
+
+  /* findings */
+  .findings{margin-top:16px;border:1px solid #ddd6c8;border-radius:16px;background:#fff;overflow:hidden}
+  .finding{display:flex;gap:14px;padding:18px 22px;border-bottom:1px solid #f1ede4;align-items:flex-start}
+  .finding:last-child{border-bottom:none}
+  .finding .fi{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .finding .fi svg{width:17px;height:17px;fill:none;stroke-width:2}
+  .fi-warn{background:rgba(224,122,154,.12)}.fi-warn svg{stroke:#a8345a}
+  .fi-grow{background:rgba(109,74,255,.1)}.fi-grow svg{stroke:#6d4aff}
+  .fi-prio{background:rgba(31,182,201,.1)}.fi-prio svg{stroke:#1296ad}
+  .finding .ft{font-size:14px;font-weight:700;margin-bottom:4px}
+  .finding .fd{font-size:13px;line-height:1.5;color:#5a5347}
+  .finding .fd b{color:#14130f}
+  .growpath{margin-top:9px;display:inline-flex;align-items:center;gap:7px;font-family:'Spline Sans Mono',monospace;font-size:11px;color:#4733c7;background:rgba(109,74,255,.06);border:1px solid rgba(109,74,255,.2);border-radius:6px;padding:5px 11px}
+  .growpath::before{content:"↗"}
+
+  .closer{margin-top:24px;padding:20px 24px;border:1px solid #ddd6c8;border-radius:14px;background:#fdfcf9;font-size:14px;line-height:1.55;color:#36322a}
+  .closer b{color:#14130f}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="seclabel">// Meet the team where it is</div>
+  <h2>How lean is the team <em>really</em> — and where can people grow?</h2>
+  <p class="lede">Before prioritizing projects, the framework reads how the Agile team is actually structured — which roles are doubled up, which functions are thinly covered, and where someone is holding a seat they were never equipped for.</p>
+  <p class="sub2">Not to grade anyone. To <b>prioritize realistically</b> and give people a path to gain the technical footing they're missing — so a scrum master covering product, or a director without a Gantt chart, gets scaffolding instead of silence.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="ch">Team leanness index</div>
+      <div class="gauge">
+        <div class="gscore" id="score">0</div>
+        <div class="glabel" id="glabel">analyzing…</div>
+        <div class="gtrack"><div class="gfill" id="gfill"></div></div>
+        <div class="gscale"><span>Lean / stretched</span><span>Balanced</span><span>Resourced</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch">Role coverage</div>
+      <div class="cov">
+        <div class="cvrow"><span class="nm">Product ownership</span><span class="who">scrum master (2 hats)</span><span class="pill p-thin">Stretched</span></div>
+        <div class="cvrow"><span class="nm">Technical depth</span><span class="who">PO has none</span><span class="pill p-gap">Gap</span></div>
+        <div class="cvrow"><span class="nm">Project planning</span><span class="who">director · no Gantt</span><span class="pill p-gap">Gap</span></div>
+        <div class="cvrow"><span class="nm">Delivery / impl.</span><span class="who">impl. analyst</span><span class="pill p-ok">Covered</span></div>
+        <div class="cvrow"><span class="nm">Data / architecture</span><span class="who">1 engineer</span><span class="pill p-thin">Thin</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="findings">
+    <div class="finding">
+      <div class="fi fi-warn"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M12 9v4M12 16h.01"/></svg></div>
+      <div><div class="ft">Combined Scrum Master + Product Owner</div><div class="fd">One person holds both seats, with <b>no technical background</b> on the product side. The framework routes technical decisions to the engineer and gives the PO plain-language context — so they're never asked to adjudicate something outside their depth.</div><span class="growpath">Growth path: guided technical briefs per sprint</span></div>
+    </div>
+    <div class="finding">
+      <div class="fi fi-grow"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+      <div><div class="ft">Director of Projects, no planning artifacts</div><div class="fd">Leading delivery without a Gantt or dependency map. Rather than flag it as a failure, the framework <b>auto-generates the first Gantt from the project docs</b> and walks the director through reading it — building the muscle, not bypassing the person.</div><span class="growpath">Growth path: generated Gantt + how-to-read overlay</span></div>
+    </div>
+    <div class="finding">
+      <div class="fi fi-prio"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h12M3 18h6"/></svg></div>
+      <div><div class="ft">Prioritization tuned to capacity</div><div class="fd">With one engineer and stretched ownership, the framework <b>recommends sequencing the 6 projects</b> so compliance-blocking and single-owner work goes first — instead of letting an over-ambitious roadmap stall a lean team.</div><span class="growpath">Output: capacity-aware project sequence</span></div>
+    </div>
+  </div>
+
+  <div class="closer">
+    <b>The point isn't to expose a thin team — it's to run one well.</b> The framework meets the org where it is, keeps people out of decisions they're not equipped for, and turns the gaps into growth paths. Lean teams don't need more process. They need the right person on the right question, and a way to learn the rest.
+  </div>
+</div>
+
+<script>
+  const target=34;
+  const score=document.getElementById('score'), gfill=document.getElementById('gfill'), glabel=document.getElementById('glabel');
+  let n=0;
+  setTimeout(()=>{
+    gfill.style.width=target+'%';
+    const iv=setInterval(()=>{n+=2;if(n>=target){n=target;clearInterval(iv);glabel.textContent='lean · stretched on ownership';}score.textContent=n;},30);
+  },300);
+</script>
+</body>
+</html>
