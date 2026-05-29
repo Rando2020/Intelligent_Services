@@ -1,0 +1,82 @@
+{
+  "id": "PLATFORM-SFTP-MFT",
+  "name": "SFTP and Managed File Transfer Control Profile",
+  "platform_type": "file_mover",
+  "description": "Control profile for SFTP, FTPS, managed file transfer, external folders, scheduled delivery jobs, and client/vendor file routes.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "sftp",
+    "ftps",
+    "secure ftp",
+    "moveit",
+    "goanywhere",
+    "mft",
+    "managed file transfer",
+    "folder path",
+    "outbound folder",
+    "inbound folder",
+    "file route"
+  ],
+  "default_risk_triggers": [
+    "external_recipient",
+    "credentialed_transfer",
+    "wrong_folder_risk",
+    "manual_route_config",
+    "regulated_data"
+  ],
+  "required_checks": [
+    "host_and_path_confirmed",
+    "folder_permissions_reviewed",
+    "credential_or_key_owner_confirmed",
+    "service_account_reviewed",
+    "recipient_allowlist_reviewed",
+    "route_config_peer_reviewed",
+    "file_naming_convention_reviewed",
+    "manifest_or_checksum_required",
+    "test_delivery_completed",
+    "job_monitoring_configured",
+    "retention_and_cleanup_defined"
+  ],
+  "required_evidence": [
+    "approved_host_and_path",
+    "folder_permission_review",
+    "service_account_owner",
+    "recipient_allowlist",
+    "route_config_review",
+    "test_delivery_log",
+    "checksum_or_manifest",
+    "monitoring_plan",
+    "retention_rule"
+  ],
+  "launch_blockers": [
+    "host_or_folder_path_not_confirmed",
+    "recipient_access_not_reviewed",
+    "credentials_without_owner",
+    "route_config_not_peer_reviewed",
+    "test_delivery_not_completed",
+    "no_delivery_monitoring"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Validate SFTP/MFT host, folder path, and route configuration",
+      "owner_role": "Platform Operations / Data Engineering",
+      "purpose": "Confirm the correct host, path, route, and schedule before production delivery.",
+      "launch_blocker": true,
+      "evidence_required": ["approved_host_and_path", "route_config_review"]
+    },
+    {
+      "title": "Review SFTP/MFT credentials, keys, and service account ownership",
+      "owner_role": "Security / Platform Operations",
+      "purpose": "Confirm least privilege, owner, expiration, rotation, and offboarding rules.",
+      "launch_blocker": true,
+      "evidence_required": ["service_account_owner", "credential_or_key_review"]
+    }
+  ],
+  "notes": [
+    "SFTP and MFT routes often fail governance through path, key, credential, route, or recipient configuration errors rather than code errors."
+  ]
+}
