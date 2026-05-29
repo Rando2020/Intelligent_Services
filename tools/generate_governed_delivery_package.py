@@ -2,9 +2,9 @@
 """
 Generate the complete governed delivery demo package.
 
-This wrapper runs the core governed_delivery_cli pipeline, adds ADO, Rally,
-and Asana CSV exports, and generates a platform control profile report from
-platform_profiles/*.profile.json.
+This wrapper runs the core governed_delivery_cli pipeline, generates a platform
+control profile report, injects platform-specific tickets/evidence into the
+package, and then adds Jira, ADO, Rally, and Asana CSV exports.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from pathlib import Path
 
 import governed_delivery_cli
 from platform_exporters import write_all_platform_exports
+from platform_profile_augmenter import augment_package
 from platform_profile_detector import write_platform_report
 
 
@@ -52,16 +53,23 @@ def main() -> None:
     args = parse_args()
     input_path = Path(args.input)
     output_dir = Path(args.output_dir)
-    governed_delivery_cli.run(input_path, output_dir, title=args.title)
-    extra_exports = write_all_platform_exports(output_dir)
-    platform_outputs = write_platform_report(input_path, output_dir, Path(args.profile_dir))
 
-    print("Additional platform exports generated:")
-    for path in extra_exports:
-        print(f"- {path}")
+    governed_delivery_cli.run(input_path, output_dir, title=args.title)
+    platform_outputs = write_platform_report(input_path, output_dir, Path(args.profile_dir))
+    augmented_outputs = augment_package(output_dir)
+    extra_exports = write_all_platform_exports(output_dir)
 
     print("Platform profile outputs generated:")
     for path in platform_outputs:
+        print(f"- {path}")
+
+    if augmented_outputs:
+        print("Platform profile controls injected into package:")
+        for path in augmented_outputs:
+            print(f"- {path}")
+
+    print("Additional platform exports generated:")
+    for path in extra_exports:
         print(f"- {path}")
 
 
