@@ -1,0 +1,81 @@
+{
+  "id": "PLATFORM-REPORTING-BI",
+  "name": "Tableau and Power BI Reporting Control Profile",
+  "platform_type": "reporting_layer",
+  "description": "Control profile for dashboards, reporting exports, row-level security, scheduled extracts, subscriptions, and report access.",
+  "maturity_scale": {
+    "min_level": "L0",
+    "max_level": "L6",
+    "supports_l6_org_specific": true
+  },
+  "detection_keywords": [
+    "tableau",
+    "power bi",
+    "pbi",
+    "looker",
+    "dashboard",
+    "report",
+    "extract",
+    "subscription",
+    "row level security",
+    "rls",
+    "csv download",
+    "scheduled report"
+  ],
+  "default_risk_triggers": [
+    "reporting_exposure",
+    "export_permissions",
+    "row_level_security_required",
+    "external_user_access",
+    "small_cell_reidentification",
+    "sensitive_data"
+  ],
+  "required_checks": [
+    "report_owner_confirmed",
+    "dataset_owner_confirmed",
+    "row_level_security_reviewed",
+    "dashboard_access_reviewed",
+    "export_download_permissions_reviewed",
+    "scheduled_subscription_reviewed",
+    "filters_and_population_logic_validated",
+    "small_cell_suppression_reviewed",
+    "refresh_schedule_reviewed",
+    "external_user_access_reviewed"
+  ],
+  "required_evidence": [
+    "report_access_matrix",
+    "row_level_security_test_results",
+    "export_permission_review",
+    "refresh_validation",
+    "population_filter_validation",
+    "small_cell_review",
+    "external_user_approval"
+  ],
+  "launch_blockers": [
+    "row_level_security_not_validated",
+    "external_access_not_reviewed",
+    "export_download_enabled_without_review",
+    "population_filter_not_validated",
+    "dashboard_contains_sensitive_data_without_approval",
+    "small_cell_risk_not_reviewed"
+  ],
+  "recommended_tickets": [
+    {
+      "title": "Validate reporting access and row-level security",
+      "owner_role": "BI / Security / Product",
+      "purpose": "Confirm users only see the intended population, rows, dashboards, and exports.",
+      "launch_blocker": true,
+      "evidence_required": ["report_access_matrix", "row_level_security_test_results"]
+    },
+    {
+      "title": "Review report export and subscription controls",
+      "owner_role": "BI / Security",
+      "purpose": "Confirm download, scheduled export, and subscription behavior is approved for the data involved.",
+      "launch_blocker": true,
+      "evidence_required": ["export_permission_review", "scheduled_subscription_review"]
+    }
+  ],
+  "notes": [
+    "Reporting tools often create compliance exposure through access, exports, subscriptions, and row-level security misconfiguration rather than data pipeline defects."
+  ]
+}
