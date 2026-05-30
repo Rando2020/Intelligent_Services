@@ -1,0 +1,114 @@
+[
+  {
+    "id": "LAUNCH-BLOCKER-001",
+    "name": "Legal approval missing for regulated or external data delivery",
+    "category": "launch_blocker",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "legal_review_confirmed", "equals": false},
+        {"any": [
+          {"field": "contains_phi", "equals": true},
+          {"field": "contains_pii", "equals": true},
+          {"field": "external_recipient", "equals": true}
+        ]}
+      ]
+    },
+    "finding": "Legal or permitted-use approval is missing for regulated or external delivery work.",
+    "required_action": "Attach Legal, Compliance, contract, BAA, SOW, or permitted-use approval before launch.",
+    "launch_blocker": true,
+    "required_evidence": ["legal_decision", "permitted_use_reference", "contract_or_baa_reference"],
+    "recommended_ticket": {
+      "title": "Resolve Legal approval for regulated or external delivery",
+      "owner_role": "Legal / Compliance",
+      "purpose": "Confirm permitted use, contractual authority, and restricted field handling before launch."
+    }
+  },
+  {
+    "id": "LAUNCH-BLOCKER-002",
+    "name": "Approved destination missing for file movement",
+    "category": "launch_blocker",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "file_movement_required", "equals": true},
+        {"field": "destination_confirmed", "equals": false}
+      ]
+    },
+    "finding": "The file mover or delivery layer is in scope, but the approved destination is not confirmed.",
+    "required_action": "Attach approved destination evidence before test or production delivery.",
+    "launch_blocker": true,
+    "required_evidence": ["approved_destination", "route_config_review"],
+    "recommended_ticket": {
+      "title": "Confirm approved file delivery destination",
+      "owner_role": "Implementation / Platform Operations",
+      "purpose": "Confirm approved folder, endpoint, bucket, portal, report, or mailbox before delivery."
+    }
+  },
+  {
+    "id": "LAUNCH-BLOCKER-003",
+    "name": "Recipient access missing for external delivery",
+    "category": "launch_blocker",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "external_recipient", "equals": true},
+        {"field": "recipient_access_confirmed", "equals": false}
+      ]
+    },
+    "finding": "External delivery is in scope, but recipient access and allowlist are not confirmed.",
+    "required_action": "Attach recipient allowlist and least-privilege access review.",
+    "launch_blocker": true,
+    "required_evidence": ["recipient_allowlist", "access_review"],
+    "recommended_ticket": {
+      "title": "Review external recipient access and allowlist",
+      "owner_role": "Security / Platform Operations",
+      "purpose": "Confirm only approved recipients or service accounts can access the delivered data."
+    }
+  },
+  {
+    "id": "LAUNCH-BLOCKER-004",
+    "name": "Production-equivalent test delivery missing",
+    "category": "launch_blocker",
+    "severity": "high",
+    "applies_when": {
+      "all": [
+        {"field": "file_movement_required", "equals": true},
+        {"field": "production_equivalent_test_completed", "equals": false}
+      ]
+    },
+    "finding": "Production-equivalent test delivery is missing.",
+    "required_action": "Execute and document production-equivalent test delivery before launch.",
+    "launch_blocker": true,
+    "required_evidence": ["test_delivery_log", "delivery_receipt", "qa_validation"],
+    "recommended_ticket": {
+      "title": "Execute production-equivalent test delivery",
+      "owner_role": "QA / Platform Operations",
+      "purpose": "Validate the correct file, recipient, destination, route, naming convention, and delivery evidence."
+    }
+  },
+  {
+    "id": "LAUNCH-BLOCKER-005",
+    "name": "Operational runbook missing",
+    "category": "launch_blocker",
+    "severity": "high",
+    "applies_when": {
+      "all": [
+        {"field": "runbook_confirmed", "equals": false},
+        {"any": [
+          {"field": "file_movement_required", "equals": true},
+          {"field": "external_recipient", "equals": true}
+        ]}
+      ]
+    },
+    "finding": "Operational runbook is missing for a governed delivery workflow.",
+    "required_action": "Create runbook covering cadence, owner, monitoring, exception handling, escalation, and pause/rollback plan.",
+    "launch_blocker": true,
+    "required_evidence": ["runbook", "pause_or_rollback_plan", "support_handoff"],
+    "recommended_ticket": {
+      "title": "Create governed delivery operational runbook",
+      "owner_role": "Implementation / Operations",
+      "purpose": "Define how the delivery workflow will be run, monitored, supported, paused, and escalated."
+    }
+  }
+]
