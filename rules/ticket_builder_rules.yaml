@@ -1,0 +1,67 @@
+[
+  {
+    "id": "TICKET-BUILDER-001",
+    "name": "Create data governance story for regulated data",
+    "category": "ticket_builder",
+    "severity": "high",
+    "applies_when": {
+      "any": [
+        {"field": "contains_phi", "equals": true},
+        {"field": "contains_pii", "equals": true},
+        {"field": "data_types", "contains_any": ["claims", "eligibility", "medication"]}
+      ]
+    },
+    "finding": "A data governance work item is required for regulated data.",
+    "required_action": "Generate a story for field classification, minimization, and approval evidence.",
+    "launch_blocker": true,
+    "required_evidence": ["approved_field_list", "minimum_necessary_review", "field_classification_matrix"],
+    "recommended_ticket": {
+      "title": "Review regulated data fields and minimization controls",
+      "owner_role": "Data Governance / Product",
+      "purpose": "Confirm fields are classified, necessary, approved, and safe for the intended use."
+    }
+  },
+  {
+    "id": "TICKET-BUILDER-002",
+    "name": "Create file mover validation story",
+    "category": "ticket_builder",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "file_movement_required", "equals": true}
+      ]
+    },
+    "finding": "A file mover validation work item is required.",
+    "required_action": "Generate a story for destination, route, recipient, naming, manifest, and test delivery validation.",
+    "launch_blocker": true,
+    "required_evidence": ["approved_destination", "recipient_allowlist", "route_config_review", "test_delivery_log"],
+    "recommended_ticket": {
+      "title": "Validate file mover route, destination, and delivery evidence",
+      "owner_role": "Platform Operations / QA",
+      "purpose": "Prove the correct file goes to the correct recipient and destination with sufficient evidence."
+    }
+  },
+  {
+    "id": "TICKET-BUILDER-003",
+    "name": "Create launch approval story",
+    "category": "ticket_builder",
+    "severity": "high",
+    "applies_when": {
+      "any": [
+        {"field": "external_recipient", "equals": true},
+        {"field": "file_movement_required", "equals": true},
+        {"field": "contains_phi", "equals": true},
+        {"field": "contains_pii", "equals": true}
+      ]
+    },
+    "finding": "A formal launch approval work item is required.",
+    "required_action": "Generate a launch approval story that requires Legal, Security, Data Governance, QA, and evidence packet completion.",
+    "launch_blocker": true,
+    "required_evidence": ["launch_decision", "evidence_packet", "risk_acceptance_if_applicable"],
+    "recommended_ticket": {
+      "title": "Approve governed production launch",
+      "owner_role": "Product / PM / Compliance",
+      "purpose": "Confirm all required approvals, evidence, blockers, and accepted risks before production launch."
+    }
+  }
+]
