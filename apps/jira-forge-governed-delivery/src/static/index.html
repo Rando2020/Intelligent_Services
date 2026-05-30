@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Governed Delivery for Jira</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <p class="eyebrow">Jira-native scaffold</p>
+        <h1>Governed Delivery Agent</h1>
+        <p>Analyze messy intake, detect governance risk, and prepare Jira-ready work items.</p>
+      </header>
+
+      <section class="notice">
+        Do not paste real PHI, PCI, credentials, secrets, or live client data into this scaffold.
+      </section>
+
+      <section class="panel">
+        <label for="title">Request title</label>
+        <input id="title" value="Jira Governed Delivery Demo" />
+
+        <label for="intake">Messy intake</label>
+        <textarea id="intake">We use Snowflake, dbt, SFTP, Tableau, and an API for healthcare claims and eligibility reporting. Legal, Security, destination, recipient access, and QA test delivery are not confirmed.</textarea>
+
+        <div class="actions">
+          <button id="analyze">Analyze with backend API</button>
+          <button id="prepare" class="secondary">Prepare Jira issue payloads</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <h2>Score</h2>
+          <div id="score" class="score">Not analyzed</div>
+          <p id="summary"></p>
+        </article>
+        <article class="panel">
+          <h2>Detected platforms</h2>
+          <ul id="platforms"></ul>
+        </article>
+        <article class="panel">
+          <h2>Launch blockers</h2>
+          <ul id="blockers"></ul>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>Generated tickets</h2>
+        <ul id="tickets"></ul>
+      </section>
+
+      <section class="panel">
+        <h2>Dry-run Jira payloads</h2>
+        <pre id="payloads">No payloads prepared.</pre>
+      </section>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
