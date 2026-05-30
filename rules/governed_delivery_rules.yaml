@@ -1,0 +1,78 @@
+[
+  {
+    "id": "GOV-DELIVERY-001",
+    "name": "Regulated data requires governed delivery review",
+    "category": "governed_delivery",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "data_types", "contains_any": ["phi", "pii", "claims", "eligibility", "medication", "client_confidential"]}
+      ]
+    },
+    "finding": "Sensitive, regulated, or client-confidential data is involved.",
+    "required_action": "Require Legal, Data Governance, Security, QA, and evidence-backed launch review before production use or external delivery.",
+    "launch_blocker": true,
+    "required_evidence": [
+      "approved_field_list",
+      "minimum_necessary_review",
+      "permitted_use_reference",
+      "security_review",
+      "qa_validation"
+    ],
+    "recommended_ticket": {
+      "title": "Complete governed delivery review for regulated data",
+      "owner_role": "Product / Data Governance / Compliance",
+      "purpose": "Confirm regulated data usage is approved, minimized, validated, and evidence-backed before launch."
+    }
+  },
+  {
+    "id": "GOV-DELIVERY-002",
+    "name": "External recipient requires recipient and destination controls",
+    "category": "governed_delivery",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "external_recipient", "equals": true}
+      ]
+    },
+    "finding": "External recipient delivery is in scope.",
+    "required_action": "Confirm recipient allowlist, approved destination, access review, route configuration, and delivery evidence.",
+    "launch_blocker": true,
+    "required_evidence": [
+      "recipient_allowlist",
+      "approved_destination",
+      "access_review",
+      "route_config_review",
+      "delivery_receipt"
+    ],
+    "recommended_ticket": {
+      "title": "Validate external recipient and destination controls",
+      "owner_role": "Security / Implementation / Platform Operations",
+      "purpose": "Prove that data will be delivered only to the approved recipient and destination."
+    }
+  },
+  {
+    "id": "GOV-DELIVERY-003",
+    "name": "Committed launch date with unresolved controls creates timeline risk",
+    "category": "timeline_governance",
+    "severity": "high",
+    "applies_when": {
+      "all": [
+        {"field": "desired_launch_date", "not_equals": "Unknown"},
+        {"field": "unknowns", "min_length": 3}
+      ]
+    },
+    "finding": "A target launch date exists while required approvals, owners, or controls remain unresolved.",
+    "required_action": "Treat timeline pressure as a governance risk and sequence required gates before production launch.",
+    "launch_blocker": false,
+    "required_evidence": [
+      "timeline_dependency_review",
+      "launch_readiness_decision"
+    ],
+    "recommended_ticket": {
+      "title": "Review timeline risk and launch readiness dependencies",
+      "owner_role": "Project Manager / Product Manager",
+      "purpose": "Confirm the launch plan is based on completed controls rather than target-date pressure."
+    }
+  }
+]
