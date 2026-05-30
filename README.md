@@ -12,6 +12,8 @@ It is built for operational reasoning, not legal advice. Agents identify risks, 
 
 ```text
 Messy intake
+  → Normalized intake
+  → YAML rule matching
   → Risk scoring
   → Platform / tool detection
   → Missing-information detection
@@ -31,11 +33,12 @@ The differentiated value isn't generic ticket writing. It's preventing bad intak
 | Component | Purpose |
 |---|---|
 | **Governed Delivery CLI** | Converts messy intake into scorecards, tickets, evidence, and exports. |
+| **YAML Rule Engine** | Matches configurable governance rules against normalized intake and injects findings, blockers, evidence, and tickets. |
 | **Platform Profile Engine** | Detects named tools (Snowflake, dbt, SFTP/MFT, Tableau, Power BI, APIs) and maps them to required governance checks. |
 | **File Mover Governance** | Treats delivery layers as governed control surfaces, not operational afterthoughts. |
 | **Ticket Exporters** | Generates Jira, ADO, Rally, and Asana-friendly CSVs. |
 | **Evidence Packet Generator** | Converts risks and controls into launch-readiness evidence requirements. |
-| **Human Review Layer** | Routes unresolved legal, privacy, security, compliance, product, and SME decisions to the right owner. |
+| **Free Trial Demo App** | Static trial front door for showing messy intake to governed work output. |
 
 ---
 
@@ -61,11 +64,36 @@ Example stack the engine recognizes: `Snowflake → dbt → SFTP / MFT → Table
 
 ---
 
+## Free trial demo app
+
+```bash
+cd apps/free-trial-demo
+python -m http.server 4173
+```
+
+Then open:
+
+```text
+http://localhost:4173
+```
+
+The demo lets a user:
+
+- Load the file mover demo
+- Load the full platform stack demo
+- Paste custom synthetic intake
+- See detected platforms
+- See launch blockers
+- Preview generated tickets and evidence
+- Download sample Jira / ADO / Rally / Asana CSV exports
+
+---
+
 ## Generated package outputs
 
 ```text
-normalized_intake.json          scorecard.json / scorecard.md
-platform_profile_report.json    platform_profile_report.md
+normalized_intake.json          rule_match_report.json / rule_match_report.md
+scorecard.json / scorecard.md   platform_profile_report.json / platform_profile_report.md
 generated_ticket_hierarchy.json generated_ticket_hierarchy.md
 jira_export.csv  ado_export.csv  rally_export.csv  asana_export.csv
 evidence_packet.json / evidence_packet.md
@@ -79,16 +107,17 @@ launch_readiness_summary.md
 ```text
 .
 ├── README.md
+├── INDEX.md
+├── apps/        # Static free-trial demo app
 ├── docs/        # Framework guides: governance, SOP scoring, legal/SME review,
 │                #   data/dev engineering, file-mover governance, CLI quickstart
-├── rules/       # Rule packs (YAML): data governance, SOP quality,
-│                #   legal/SME review, data/dev engineering
-├── schemas/     # JSON schemas: governance rule, intake, ticket, scorecard,
-│                #   evidence packet, platform profile
-├── tools/       # Executable: delivery CLI, package generator, exporters,
-│                #   platform detector & augmenter
+├── rules/       # Rule packs: legacy YAML plus executable JSON-compatible YAML
+├── schemas/     # JSON schemas: governance rule, execution rule, intake, ticket,
+│                #   scorecard, evidence packet, platform profile
+├── tools/       # Executable: delivery CLI, package generator, rule engine,
+│                #   exporters, platform detector & augmenters
 ├── examples/    # Free-trial demo intakes
-└── tests/       # pytest coverage for package generation & platform profiles
+└── tests/       # pytest coverage for YAML rules, package generation & platform profiles
 ```
 
 ---
@@ -97,10 +126,16 @@ launch_readiness_summary.md
 
 | Rule pack | Purpose |
 |---|---|
+| `rules/governed_delivery_rules.yaml` | Executable governed delivery findings, evidence, and recommended tickets. |
+| `rules/launch_blocker_rules.yaml` | Executable launch-blocking conditions and required resolutions. |
+| `rules/evidence_rules.yaml` | Executable evidence packet requirements. |
+| `rules/ticket_builder_rules.yaml` | Executable rule-driven ticket generation. |
 | `rules/data_governance_rules.yaml` | Baseline governance and regulatory overlay logic. |
 | `rules/sop_quality_rules.yaml` | SOP quality scoring and mandatory gate caps. |
 | `rules/legal_sme_review_rules.yaml` | Review routing and escalation conditions. |
 | `rules/data_dev_engineering_rules.yaml` | Engineering-safe data use, transformation, enrichment, and delivery controls. |
+
+Prototype note: the executable rule packs use `.yaml` for readability but currently contain JSON-compatible YAML so the rule engine can remain dependency-free.
 
 ## Regulatory overlays
 
@@ -132,7 +167,7 @@ The system separates baseline governance controls from regulatory overlays, whic
 ## Run the tests
 
 ```bash
-python -m pytest tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
+python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
 ```
 
 ---
@@ -141,9 +176,9 @@ python -m pytest tests/test_governed_delivery_package.py tests/test_platform_sta
 
 | Priority | Build | Why |
 |---:|---|---|
-| 1 | YAML-driven rule engine | Move scoring/blocker logic out of hardcoded Python into the rule packs. |
-| 2 | Contradiction detector | Compare SOPs, tickets, timelines, data maps, and manifests for mismatch risk. |
-| 3 | Trial demo UI | Turn CLI output into a no-friction free-trial experience. |
+| 1 | Backend demo API | Connect the static demo to the actual Python package generator. |
+| 2 | True YAML parser / stricter schema validation | Improve authoring experience and catch malformed rules earlier. |
+| 3 | Contradiction detector | Compare SOPs, tickets, timelines, data maps, and manifests for mismatch risk. |
 | 4 | More platform profiles | Cloud storage, Databricks, GitHub, Airflow, Informatica, Salesforce. |
 | 5 | Direct Jira / ADO integration | Move beyond CSV export once package logic is stable. |
 | 6 | SOC 2 / audit control map | Stronger enterprise-readiness story. |
@@ -157,7 +192,6 @@ This repository provides an operational governance framework. It does not provid
 ## License
 
 See [LICENSE](LICENSE).
-```
 
 ---
 
