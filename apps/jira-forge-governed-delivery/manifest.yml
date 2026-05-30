@@ -1,0 +1,31 @@
+modules:
+  jira:projectPage:
+    - key: governed-delivery-project-page
+      resource: main
+      resolver:
+        function: resolver
+      title: Governed Delivery Agent
+  jira:issuePanel:
+    - key: governed-delivery-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      title: Governed Delivery
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: src/index.handler
+resources:
+  - key: main
+    path: src/static
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+  external:
+    fetch:
+      backend:
+        - "*"
+app:
+  runtime:
+    name: nodejs20.x
