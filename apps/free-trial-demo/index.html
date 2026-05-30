@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Governed Delivery Agent Free Trial Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Governed Delivery Agent</p>
+          <h1>Turn messy intake into governed delivery work.</h1>
+          <p class="hero-copy">
+            Detect platform controls, launch blockers, evidence gaps, and export-ready work items before vague requests become bad sprint work.
+          </p>
+          <div class="hero-actions">
+            <button id="load-file-mover" class="button primary">Load file mover demo</button>
+            <button id="load-platform-stack" class="button secondary">Load platform stack demo</button>
+          </div>
+        </div>
+        <aside class="hero-card">
+          <span class="score-label">Sample readiness</span>
+          <strong id="hero-score">62 / 100</strong>
+          <span id="hero-status" class="status blocked">Not launchable</span>
+        </aside>
+      </section>
+
+      <section class="warning">
+        <strong>Safety rule:</strong> Do not paste real PHI, PCI, credentials, secrets, or live client data. Use synthetic, redacted, or generalized intake text.
+      </section>
+
+      <section class="grid two-column">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>1. Paste messy intake</h2>
+            <span class="pill">Step 1</span>
+          </div>
+          <textarea id="intake" spellcheck="false"></textarea>
+          <div class="actions-row">
+            <button id="analyze" class="button primary">Analyze intake</button>
+            <button id="clear" class="button ghost">Clear</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>2. Governed delivery scorecard</h2>
+            <span class="pill">Step 2</span>
+          </div>
+          <div class="scorecard">
+            <div>
+              <span class="score-label">Readiness</span>
+              <strong id="score">62 / 100</strong>
+            </div>
+            <div>
+              <span class="score-label">Launch position</span>
+              <strong id="launch-position">Not launchable</strong>
+            </div>
+          </div>
+          <p id="score-summary" class="muted"></p>
+          <div id="detected-platforms" class="chips"></div>
+        </div>
+      </section>
+
+      <section class="grid three-column">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Launch blockers</h2>
+            <span id="blocker-count" class="pill danger">0</span>
+          </div>
+          <ul id="blockers" class="list"></ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Generated tickets</h2>
+            <span id="ticket-count" class="pill">0</span>
+          </div>
+          <ul id="tickets" class="list"></ul>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Evidence packet</h2>
+            <span id="evidence-count" class="pill">0</span>
+          </div>
+          <ul id="evidence" class="list"></ul>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>3. Trial export preview</h2>
+          <span class="pill">Step 3</span>
+        </div>
+        <p class="muted">Download sample CSV exports generated from the current analysis. Production version will call the backend package generator.</p>
+        <div class="export-grid">
+          <button class="button secondary export" data-platform="jira">Download Jira CSV</button>
+          <button class="button secondary export" data-platform="ado">Download ADO CSV</button>
+          <button class="button secondary export" data-platform="rally">Download Rally CSV</button>
+          <button class="button secondary export" data-platform="asana">Download Asana CSV</button>
+        </div>
+      </section>
+
+      <section class="panel roadmap">
+        <h2>What this demo proves</h2>
+        <div class="grid three-column">
+          <div>
+            <h3>Bad intake detector</h3>
+            <p>Finds missing approvals, destinations, owners, access reviews, and test evidence.</p>
+          </div>
+          <div>
+            <h3>Platform-aware governance</h3>
+            <p>Translates tools like Snowflake, dbt, SFTP, Tableau, and APIs into control checks.</p>
+          </div>
+          <div>
+            <h3>Export-ready work</h3>
+            <p>Turns messy requests into tickets, evidence, launch blockers, and platform exports.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
