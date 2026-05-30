@@ -29,8 +29,15 @@ def test_platform_stack_profile_detection(tmp_path):
         text=True,
     )
 
+    assert "YAML rule match outputs generated" in result.stdout
     assert "Platform profile outputs generated" in result.stdout
     assert "Platform profile controls injected into package" in result.stdout
+
+    rule_report = json.loads((output_dir / "rule_match_report.json").read_text(encoding="utf-8"))
+    assert rule_report["matched_rule_count"] >= 1
+    matched_rule_ids = {rule["id"] for rule in rule_report["matched_rules"]}
+    assert "GOV-DELIVERY-001" in matched_rule_ids
+    assert "LAUNCH-BLOCKER-001" in matched_rule_ids
 
     report_path = output_dir / "platform_profile_report.json"
     assert report_path.exists()
@@ -65,13 +72,16 @@ def test_platform_stack_profile_detection(tmp_path):
     tickets = json.loads((output_dir / "generated_ticket_hierarchy.json").read_text(encoding="utf-8"))
     ticket_titles = {ticket["title"] for ticket in tickets}
     assert "Platform Control Profile Governance" in ticket_titles
+    assert "Rule-Driven Governance Controls" in ticket_titles
     assert "Review Snowflake data classification and object tags" in ticket_titles
     assert "Review dbt model ownership, tests, and lineage" in ticket_titles
     assert "Validate reporting access and row-level security" in ticket_titles
     assert "Review API endpoint, authentication, and payload contract" in ticket_titles
+    assert any(ticket.get("source_rule_id") == "LAUNCH-BLOCKER-001" for ticket in tickets)
 
     evidence_packet = json.loads((output_dir / "evidence_packet.json").read_text(encoding="utf-8"))
     evidence_areas = {item["evidence_area"] for item in evidence_packet["evidence_items"]}
     assert "Platform profile: Snowflake Control Profile" in evidence_areas
     assert "Platform profile: dbt Transformation Control Profile" in evidence_areas
     assert "Platform profile: Tableau and Power BI Reporting Control Profile" in evidence_areas
+    assert "Matched rule: LAUNCH-BLOCKER-001" in evidence_areas
