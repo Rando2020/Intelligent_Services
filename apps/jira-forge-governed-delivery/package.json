@@ -1,0 +1,20 @@
+{
+  "name": "jira-forge-governed-delivery",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Atlassian Forge scaffold for Governed Delivery Agent Jira integration.",
+  "scripts": {
+    "lint": "echo \"No lint configured yet\"",
+    "deploy": "forge deploy",
+    "install": "forge install",
+    "tunnel": "forge tunnel"
+  },
+  "dependencies": {
+    "@forge/api": "latest",
+    "@forge/bridge": "latest",
+    "@forge/resolver": "latest"
+  },
+  "devDependencies": {
+    "@forge/cli": "latest"
+  }
+}
