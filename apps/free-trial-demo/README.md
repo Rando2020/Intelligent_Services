@@ -8,33 +8,58 @@ It is designed to make the free trial value obvious:
 
 ```text
 Paste messy intake
-→ detect governance risk
-→ detect platforms
+→ call backend API
+→ run YAML rules and platform profiles
 → show launch blockers
 → preview generated tickets
 → preview evidence packet
-→ download sample exports
+→ download real generated exports when backend is running
 ```
 
-## Run Locally
+## Run with Real Backend Analysis
 
-From this folder:
+From the repository root, start the backend API:
 
 ```bash
+python apps/backend-demo-api/server.py
+```
+
+Then in a second terminal, start the static demo:
+
+```bash
+cd apps/free-trial-demo
 python -m http.server 4173
 ```
 
-Then open:
+Open:
 
 ```text
 http://localhost:4173
 ```
 
-You can also use:
+The app calls:
 
-```bash
-npm run start
+```text
+http://localhost:8787/api/analyze
 ```
+
+## Backend Fallback Behavior
+
+If the backend API is not running, the app falls back to a local client-side preview so the UI remains demoable.
+
+The fallback is useful for showing the flow, but the real package generation comes from the backend API.
+
+## Custom Backend URL
+
+Before loading the app, set:
+
+```html
+<script>
+  window.GOVERNED_DELIVERY_API_URL = "https://your-demo-api.example.com/api/analyze";
+</script>
+```
+
+The static app will use that value instead of localhost.
 
 ## Important Safety Rule
 
@@ -42,6 +67,10 @@ Do not paste real PHI, PCI, credentials, secrets, or live client data. Use synth
 
 ## Current State
 
-This demo is intentionally front-end only. It mirrors the generated package concept without requiring a backend server.
+The demo now uses backend-first analysis with local fallback.
 
-The next production step would be to wrap `tools/generate_governed_delivery_package.py` behind a backend API route and return real generated outputs.
+Next production step:
+
+```text
+Deploy the backend API and static demo together, add auth/rate limits, and persist only approved non-sensitive exports.
+```
