@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This index organizes the Intelligent Services repo into its core governance components, executable tools, demo flows, schemas, profiles, rules, tests, and next-build areas.
+This index organizes the Intelligent Services repo into its core governance components, executable tools, demo flows, apps, schemas, profiles, rules, tests, and next-build areas.
 
 The repo is designed to help AI agents convert messy operational intake into governed delivery work:
 
@@ -16,6 +16,8 @@ Messy intake
 → ticket hierarchy
 → platform exports
 → evidence packet
+→ backend API response
+→ Jira-native dry-run payloads
 → launch readiness summary
 ```
 
@@ -42,17 +44,29 @@ Messy intake
 | Platform Profile Detector | `tools/platform_profile_detector.py` | Detects named tools/platforms and creates platform profile report. |
 | Platform Profile Augmenter | `tools/platform_profile_augmenter.py` | Injects platform-profile tickets and evidence into the generated package. |
 
-## 3. Free Trial Demo App
+## 3. Apps
 
-Location:
+| App | Location | Purpose |
+|---|---|---|
+| Backend Demo API | `apps/backend-demo-api/` | HTTP API wrapping the Python package generator with `/health` and `/api/analyze`. |
+| Free Trial Demo App | `apps/free-trial-demo/` | Static demo front door for trial-style messy intake analysis. |
+| Jira Forge Scaffold | `apps/jira-forge-governed-delivery/` | Atlassian Forge starter with project page, issue panel, backend analysis, issue context, and dry-run Jira payloads. |
 
-```text
-apps/free-trial-demo/
+### 3.1 Backend Demo API
+
+Run:
+
+```bash
+python apps/backend-demo-api/server.py
 ```
 
-Purpose:
+Endpoint:
 
-Provides a static, dependency-light front door for the free trial experience.
+```text
+http://localhost:8787/api/analyze
+```
+
+### 3.2 Free Trial Demo App
 
 Run:
 
@@ -67,14 +81,23 @@ Open:
 http://localhost:4173
 ```
 
-Current capabilities:
+### 3.3 Jira Forge Scaffold
 
-- Load file mover demo
-- Load platform stack demo
-- Paste custom synthetic intake
-- Detect platforms client-side
-- Show readiness score, launch blockers, generated tickets, and evidence requirements
-- Download sample Jira / ADO / Rally / Asana CSV exports
+Location:
+
+```text
+apps/jira-forge-governed-delivery/
+```
+
+Current behavior:
+
+- Jira project page scaffold
+- Jira issue panel scaffold
+- Backend analysis resolver
+- Jira issue context resolver
+- Dry-run Jira payload preparation
+
+Actual Jira issue creation is intentionally not enabled yet. Field mapping, permissions, tenant isolation, and safety controls should be reviewed first.
 
 ## 4. Demo Paths
 
@@ -199,11 +222,13 @@ Platform profiles translate tool names into required governance checks.
 | YAML Rule Pack Test | `tests/test_yaml_rule_packs.py` | Validates every YAML pack has IDs and executable packs have valid rule shapes/operators. |
 | Governed Delivery Package Test | `tests/test_governed_delivery_package.py` | Verifies core package generation, YAML rule matching, rule injection, and cross-platform exports. |
 | Platform Stack Profile Test | `tests/test_platform_stack_profiles.py` | Verifies multi-platform detection, platform profile augmentation, and rule-driven outputs. |
+| Backend Demo API Test | `tests/test_backend_demo_api.py` | Verifies backend API analysis returns generated package response. |
+| Jira Forge Scaffold Test | `tests/test_jira_forge_scaffold.py` | Verifies Forge scaffold files and dry-run Jira payload behavior. |
 
 Run:
 
 ```bash
-python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
+python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py tests/test_backend_demo_api.py tests/test_jira_forge_scaffold.py
 ```
 
 ## 11. Current Output Package
@@ -233,10 +258,10 @@ launch_readiness_summary.md
 
 | Priority | Build | Why |
 |---:|---|---|
-| 1 | Backend demo API | Connect the static demo to the actual Python package generator. |
-| 2 | True YAML parser / stricter schema validation | Improves authoring experience and catches malformed rules earlier. |
-| 3 | Move more scoring logic into YAML rules | Reduces hardcoded Python and strengthens configurability. |
+| 1 | Connect static free-trial UI to backend API | Make the demo use real package generation instead of local simulation. |
+| 2 | Enable controlled Jira issue creation | Move Forge scaffold from dry-run payloads to actual issue creation after field mapping review. |
+| 3 | True YAML parser / stricter schema validation | Improves authoring experience and catches malformed rules earlier. |
 | 4 | More platform profiles | Adds cloud storage, Databricks, GitHub, Airflow, Informatica, Salesforce. |
-| 5 | Direct Jira / ADO integration | Moves beyond CSV export once package logic is stable. |
+| 5 | Direct ADO integration | Moves beyond CSV export once package logic is stable. |
 | 6 | SOC 2 control map | Adds stronger audit and enterprise readiness story. |
 | 7 | Contradiction detector | Compares SOPs, tickets, timelines, data maps, and manifests for mismatch risk. |
