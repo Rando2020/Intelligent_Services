@@ -21,6 +21,8 @@ Messy intake
   → Ticket hierarchy generation
   → Jira / ADO / Rally / Asana export
   → Evidence packet
+  → Backend API response
+  → Jira-native dry-run payloads
   → Human review routing
 ```
 
@@ -38,7 +40,9 @@ The differentiated value isn't generic ticket writing. It's preventing bad intak
 | **File Mover Governance** | Treats delivery layers as governed control surfaces, not operational afterthoughts. |
 | **Ticket Exporters** | Generates Jira, ADO, Rally, and Asana-friendly CSVs. |
 | **Evidence Packet Generator** | Converts risks and controls into launch-readiness evidence requirements. |
+| **Backend Demo API** | Wraps the Python generator behind `/api/analyze` for demo apps and integrations. |
 | **Free Trial Demo App** | Static trial front door for showing messy intake to governed work output. |
+| **Jira Forge Scaffold** | Jira project page and issue panel scaffold for Atlassian-native analysis and dry-run issue payloads. |
 
 ---
 
@@ -61,6 +65,28 @@ python tools/generate_governed_delivery_package.py \
 ```
 
 Example stack the engine recognizes: `Snowflake → dbt → SFTP / MFT → Tableau / Power BI → API`
+
+---
+
+## Backend demo API
+
+```bash
+python apps/backend-demo-api/server.py
+```
+
+Default endpoint:
+
+```text
+http://localhost:8787/api/analyze
+```
+
+Example:
+
+```bash
+curl -X POST http://localhost:8787/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Demo Intake","intake":"We use Snowflake, dbt, SFTP, Tableau, and an API. Legal and Security are not confirmed."}'
+```
 
 ---
 
@@ -89,6 +115,24 @@ The demo lets a user:
 
 ---
 
+## Jira-native scaffold
+
+```text
+apps/jira-forge-governed-delivery/
+```
+
+Current scaffold includes:
+
+- Jira project page module
+- Jira issue panel module
+- Backend analysis resolver
+- Jira issue context resolver
+- Dry-run Jira issue payload preparation
+
+Actual Jira issue creation is intentionally not enabled yet. The scaffold prepares payloads first so field mapping, permissions, issue type behavior, and safety controls can be reviewed before write actions are introduced.
+
+---
+
 ## Generated package outputs
 
 ```text
@@ -108,7 +152,7 @@ launch_readiness_summary.md
 .
 ├── README.md
 ├── INDEX.md
-├── apps/        # Static free-trial demo app
+├── apps/        # Backend API, static free-trial demo app, Jira Forge scaffold
 ├── docs/        # Framework guides: governance, SOP scoring, legal/SME review,
 │                #   data/dev engineering, file-mover governance, CLI quickstart
 ├── rules/       # Rule packs: legacy YAML plus executable JSON-compatible YAML
@@ -117,7 +161,7 @@ launch_readiness_summary.md
 ├── tools/       # Executable: delivery CLI, package generator, rule engine,
 │                #   exporters, platform detector & augmenters
 ├── examples/    # Free-trial demo intakes
-└── tests/       # pytest coverage for YAML rules, package generation & platform profiles
+└── tests/       # pytest coverage for YAML rules, package generation, backend API & Forge scaffold
 ```
 
 ---
@@ -167,7 +211,12 @@ The system separates baseline governance controls from regulatory overlays, whic
 ## Run the tests
 
 ```bash
-python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
+python -m pytest \
+  tests/test_yaml_rule_packs.py \
+  tests/test_governed_delivery_package.py \
+  tests/test_platform_stack_profiles.py \
+  tests/test_backend_demo_api.py \
+  tests/test_jira_forge_scaffold.py
 ```
 
 ---
@@ -176,12 +225,13 @@ python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_pack
 
 | Priority | Build | Why |
 |---:|---|---|
-| 1 | Backend demo API | Connect the static demo to the actual Python package generator. |
-| 2 | True YAML parser / stricter schema validation | Improve authoring experience and catch malformed rules earlier. |
-| 3 | Contradiction detector | Compare SOPs, tickets, timelines, data maps, and manifests for mismatch risk. |
-| 4 | More platform profiles | Cloud storage, Databricks, GitHub, Airflow, Informatica, Salesforce. |
-| 5 | Direct Jira / ADO integration | Move beyond CSV export once package logic is stable. |
-| 6 | SOC 2 / audit control map | Stronger enterprise-readiness story. |
+| 1 | Connect static free-trial UI to backend API | Make the demo use real package generation instead of local simulation. |
+| 2 | Enable controlled Jira issue creation | Move Forge scaffold from dry-run payloads to actual issue creation after field mapping review. |
+| 3 | True YAML parser / stricter schema validation | Improve authoring experience and catch malformed rules earlier. |
+| 4 | Contradiction detector | Compare SOPs, tickets, timelines, data maps, and manifests for mismatch risk. |
+| 5 | More platform profiles | Cloud storage, Databricks, GitHub, Airflow, Informatica, Salesforce. |
+| 6 | Direct ADO integration | Move beyond CSV export once package logic is stable. |
+| 7 | SOC 2 / audit control map | Stronger enterprise-readiness story. |
 
 ---
 
