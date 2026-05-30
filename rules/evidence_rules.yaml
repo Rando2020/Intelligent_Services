@@ -1,0 +1,60 @@
+[
+  {
+    "id": "EVIDENCE-001",
+    "name": "Regulated data evidence packet",
+    "category": "evidence",
+    "severity": "high",
+    "applies_when": {
+      "any": [
+        {"field": "contains_phi", "equals": true},
+        {"field": "contains_pii", "equals": true},
+        {"field": "data_types", "contains_any": ["claims", "eligibility", "medication", "client_confidential"]}
+      ]
+    },
+    "finding": "Regulated or sensitive data requires an evidence-backed launch packet.",
+    "required_action": "Collect approvals, field review, data QA, and access evidence before launch.",
+    "launch_blocker": false,
+    "required_evidence": [
+      "approved_field_list",
+      "field_classification_matrix",
+      "minimum_necessary_review",
+      "data_qa_results",
+      "access_review"
+    ],
+    "recommended_ticket": {
+      "title": "Assemble regulated data evidence packet",
+      "owner_role": "Product / Data Governance / QA",
+      "purpose": "Collect and attach evidence that regulated data is approved, minimized, validated, and controlled."
+    }
+  },
+  {
+    "id": "EVIDENCE-002",
+    "name": "File delivery evidence packet",
+    "category": "evidence",
+    "severity": "high",
+    "applies_when": {
+      "all": [
+        {"field": "file_movement_required", "equals": true}
+      ]
+    },
+    "finding": "File movement requires delivery-layer evidence.",
+    "required_action": "Collect destination, route, recipient, manifest, checksum, delivery log, and monitoring evidence.",
+    "launch_blocker": false,
+    "required_evidence": [
+      "approved_destination",
+      "recipient_allowlist",
+      "route_config_review",
+      "file_naming_convention",
+      "manifest_or_control_totals",
+      "checksum_or_integrity_control",
+      "test_delivery_log",
+      "delivery_receipt",
+      "monitoring_plan"
+    ],
+    "recommended_ticket": {
+      "title": "Assemble file delivery evidence packet",
+      "owner_role": "Implementation / Platform Operations / QA",
+      "purpose": "Collect and attach the evidence proving correct route, destination, recipient, and delivery behavior."
+    }
+  }
+]
