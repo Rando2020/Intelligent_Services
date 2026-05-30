@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This index organizes the Intelligent Services repo into its core governance components, executable tools, demo flows, schemas, profiles, rules, and next-build areas.
+This index organizes the Intelligent Services repo into its core governance components, executable tools, demo flows, schemas, profiles, rules, tests, and next-build areas.
 
 The repo is designed to help AI agents convert messy operational intake into governed delivery work:
 
@@ -42,9 +42,43 @@ Messy intake
 | Platform Profile Detector | `tools/platform_profile_detector.py` | Detects named tools/platforms and creates platform profile report. |
 | Platform Profile Augmenter | `tools/platform_profile_augmenter.py` | Injects platform-profile tickets and evidence into the generated package. |
 
-## 3. Demo Paths
+## 3. Free Trial Demo App
 
-### 3.1 Healthcare File Mover Delivery Demo
+Location:
+
+```text
+apps/free-trial-demo/
+```
+
+Purpose:
+
+Provides a static, dependency-light front door for the free trial experience.
+
+Run:
+
+```bash
+cd apps/free-trial-demo
+python -m http.server 4173
+```
+
+Open:
+
+```text
+http://localhost:4173
+```
+
+Current capabilities:
+
+- Load file mover demo
+- Load platform stack demo
+- Paste custom synthetic intake
+- Detect platforms client-side
+- Show readiness score, launch blockers, generated tickets, and evidence requirements
+- Download sample Jira / ADO / Rally / Asana CSV exports
+
+## 4. Demo Paths
+
+### 4.1 Healthcare File Mover Delivery Demo
 
 Location:
 
@@ -64,7 +98,7 @@ python tools/generate_governed_delivery_package.py \
   --output-dir generated/free_trial/healthcare_file_mover_delivery
 ```
 
-### 3.2 Platform Stack Governance Demo
+### 4.2 Platform Stack Governance Demo
 
 Location:
 
@@ -90,7 +124,7 @@ python tools/generate_governed_delivery_package.py \
   --output-dir generated/free_trial/platform_stack_governance
 ```
 
-## 4. YAML Rule Engine
+## 5. YAML Rule Engine
 
 Rule packs are currently `.yaml` files containing JSON-compatible YAML so the engine stays dependency-free.
 
@@ -112,7 +146,7 @@ Supported condition operators:
 | `all` | All child conditions must match. |
 | `any` | At least one child condition must match. |
 
-## 5. Platform Profiles
+## 6. Platform Profiles
 
 Platform profiles translate tool names into required governance checks.
 
@@ -125,7 +159,7 @@ Platform profiles translate tool names into required governance checks.
 | Tableau / Power BI | `platform_profiles/tableau_powerbi.profile.json` | Reporting controls: row-level security, dashboard access, exports, subscriptions, refresh validation. |
 | API Integration | `platform_profiles/api.profile.json` | API controls: auth, payload schema, logging, secrets, monitoring, endpoint approval. |
 
-## 6. L0-L6 Maturity Model
+## 7. L0-L6 Maturity Model
 
 | Level | Name | Meaning |
 |---|---|---|
@@ -137,18 +171,19 @@ Platform profiles translate tool names into required governance checks.
 | L5 | Automated / enforced | Controls are built into workflows, policies, permissions, jobs, or CI/CD. |
 | L6 | Adaptive / org-specific | Organization-specific rules, exceptions, naming conventions, mappings, and monitoring apply. |
 
-## 7. Schemas
+## 8. Schemas
 
 | Schema | Location | Purpose |
 |---|---|---|
 | Governance Rule Schema | `schemas/governance_rule.schema.json` | Machine-readable baseline governance rule structure. |
+| Governance Execution Rule Schema | `schemas/governance_execution_rule.schema.json` | Executable rule structure for rule-driven package generation. |
 | Intake Schema | `schemas/intake.schema.json` | Structured messy intake format. |
 | Ticket Schema | `schemas/ticket.schema.json` | Generated ticket/work item structure. |
 | Scorecard Schema | `schemas/scorecard.schema.json` | Governed delivery risk scorecard output. |
 | Evidence Packet Schema | `schemas/evidence_packet.schema.json` | Launch readiness evidence checklist output. |
 | Platform Profile Schema | `schemas/platform_profile.schema.json` | Tool/platform-specific governance control profiles. |
 
-## 8. Legacy / Supporting Rule Packs
+## 9. Legacy / Supporting Rule Packs
 
 | Rule Pack | Location | Purpose |
 |---|---|---|
@@ -157,20 +192,21 @@ Platform profiles translate tool names into required governance checks.
 | Legal / SME Review Rules | `rules/legal_sme_review_rules.yaml` | Review routing and escalation conditions. |
 | Data / Dev Engineering Rules | `rules/data_dev_engineering_rules.yaml` | Engineering-safe data use, transformation, enrichment, and delivery controls. |
 
-## 9. Tests
+## 10. Tests
 
 | Test | Location | Purpose |
 |---|---|---|
+| YAML Rule Pack Test | `tests/test_yaml_rule_packs.py` | Validates every YAML pack has IDs and executable packs have valid rule shapes/operators. |
 | Governed Delivery Package Test | `tests/test_governed_delivery_package.py` | Verifies core package generation, YAML rule matching, rule injection, and cross-platform exports. |
 | Platform Stack Profile Test | `tests/test_platform_stack_profiles.py` | Verifies multi-platform detection, platform profile augmentation, and rule-driven outputs. |
 
 Run:
 
 ```bash
-python -m pytest tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
+python -m pytest tests/test_yaml_rule_packs.py tests/test_governed_delivery_package.py tests/test_platform_stack_profiles.py
 ```
 
-## 10. Current Output Package
+## 11. Current Output Package
 
 The full package generator produces:
 
@@ -193,13 +229,13 @@ evidence_packet.md
 launch_readiness_summary.md
 ```
 
-## 11. Next Recommended Builds
+## 12. Next Recommended Builds
 
 | Priority | Build | Why |
 |---:|---|---|
-| 1 | True YAML parser or schema validation | Improves authoring experience and catches malformed rules earlier. |
-| 2 | Move more scoring logic into YAML rules | Reduces hardcoded Python and strengthens configurability. |
-| 3 | Trial demo UI | Turns CLI output into a no-brainer free trial experience. |
+| 1 | Backend demo API | Connect the static demo to the actual Python package generator. |
+| 2 | True YAML parser / stricter schema validation | Improves authoring experience and catches malformed rules earlier. |
+| 3 | Move more scoring logic into YAML rules | Reduces hardcoded Python and strengthens configurability. |
 | 4 | More platform profiles | Adds cloud storage, Databricks, GitHub, Airflow, Informatica, Salesforce. |
 | 5 | Direct Jira / ADO integration | Moves beyond CSV export once package logic is stable. |
 | 6 | SOC 2 control map | Adds stronger audit and enterprise readiness story. |
