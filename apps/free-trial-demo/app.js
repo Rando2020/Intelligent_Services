@@ -1,5 +1,8 @@
+const BACKEND_API_URL = window.GOVERNED_DELIVERY_API_URL || "http://localhost:8787/api/analyze";
+
 const demos = {
   fileMover: {
+    title: "Healthcare File Mover Delivery Demo",
     intake: `We need to onboard Centene for weekly LAMP outbound files by July 1. The file will include eligibility, claims, adherence opportunities, and pharmacy outreach records. The client needs the file every week and wants it delivered through their approved file delivery process.
 
 We have a draft file layout and the data team says the SQL is mostly done. We still need to confirm the final delivery folder or endpoint, who should receive access, and whether Legal has approved the final field list. The team believes this is similar to prior client deliveries, so they want to move quickly.`,
@@ -28,6 +31,7 @@ We have a draft file layout and the data team says the SQL is mostly done. We st
     ]
   },
   platformStack: {
+    title: "Platform Stack Governance Demo",
     intake: `We need to launch a new governed healthcare reporting workflow for a payer client by August 15. The data is currently stored in Snowflake. Analytics Engineering is transforming it through dbt models. The weekly outbound file will be delivered through SFTP or another approved managed file transfer process. A dashboard will also be published in Tableau for internal operations, and a partner API may be used later to send status updates.
 
 The SQL and dbt models are mostly built, but we still need to confirm the final approved field list, Snowflake role access, masking or row access policies, dbt test coverage, Tableau row-level security, SFTP destination folder, recipient allowlist, and API payload requirements. Legal has not yet approved the final field list. Security has not completed the access review. QA has not completed a production-equivalent test delivery.
@@ -64,6 +68,8 @@ The team wants to move quickly because leadership already shared the August 15 t
 };
 
 let current = demos.platformStack;
+let lastBackendResult = null;
+let lastExportCsv = {};
 
 const intake = document.getElementById("intake");
 const score = document.getElementById("score");
@@ -128,12 +134,85 @@ function buildFallback(text) {
   ];
   if (hasExternal) evidence.push(["approved_destination", "Platform Operations"], ["recipient_allowlist", "Security"], ["test_delivery_log", "QA"]);
 
-  return { platforms, blockers, tickets, evidence };
+  return { platforms, blockers, tickets, evidence, source: "local fallback" };
 }
 
-function analyze() {
+async function analyze() {
   const text = intake.value.trim();
-  const fallback = text === current.intake.trim() ? current : buildFallback(text);
+  if (!text) {
+    renderLocalResult({ platforms: [], blockers: [], tickets: [], evidence: [], source: "empty" });
+    return;
+  }
+
+  score.textContent = "Analyzing...";
+  heroScore.textContent = "Analyzing...";
+  launchPosition.textContent = "Calling backend";
+  heroStatus.textContent = "Calling backend";
+  scoreSummary.textContent = `Using backend API: ${BACKEND_API_URL}`;
+
+  try {
+    const result = await callBackend(text);
+    renderBackendResult(result);
+  } catch (error) {
+    const fallback = text === current.intake.trim() ? { ...current, source: "local fallback" } : buildFallback(text);
+    renderLocalResult(fallback, `Backend unavailable, using local fallback. ${error.message || error}`);
+  }
+}
+
+async function callBackend(text) {
+  const response = await fetch(BACKEND_API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      title: current.title || "Governed Delivery Free Trial Intake",
+      intake: text
+    })
+  });
+
+  const body = await response.json();
+  if (!response.ok) {
+    throw new Error(body.message || "Backend analysis failed");
+  }
+  return body;
+}
+
+function renderBackendResult(result) {
+  lastBackendResult = result;
+  lastExportCsv = {
+    jira: result.exports?.jira_csv || "",
+    ado: result.exports?.ado_csv || "",
+    rally: result.exports?.rally_csv || "",
+    asana: result.exports?.asana_csv || ""
+  };
+
+  const summary = result.summary || {};
+  const scoreValue = `${summary.overall_score ?? "N/A"} / 100`;
+  const launch = formatValue(summary.launch_position || "unknown");
+  const launchBlockers = result.scorecard?.launch_blockers || [];
+  const generatedTickets = result.tickets || [];
+  const evidenceItems = result.evidence_packet?.evidence_items || [];
+  const profiles = result.platform_profile_report?.detected_profiles || [];
+
+  score.textContent = scoreValue;
+  heroScore.textContent = scoreValue;
+  launchPosition.textContent = launch;
+  heroStatus.textContent = launch;
+  heroStatus.classList.toggle("blocked", launchBlockers.length > 0);
+  scoreSummary.textContent = `Backend result. Matched rules: ${summary.matched_rule_count || 0}. Detected platforms: ${summary.detected_platform_count || 0}. Generated tickets: ${summary.ticket_count || generatedTickets.length}.`;
+
+  renderChips(profiles.map(profile => `${profile.name} (${profile.suggested_current_level || "L0"})`));
+  renderList(blockers, launchBlockers.map(item => [item.blocker, item.required_resolution || item.owner_role || "Resolution required"]));
+  renderList(tickets, generatedTickets.slice(0, 18).map(item => [item.title, item.owner_role || item.work_item_type || "TBD"]));
+  renderList(evidence, evidenceItems.slice(0, 18).map(item => [item.required_artifact, item.owner_role || item.evidence_area || "Evidence owner TBD"]));
+
+  blockerCount.textContent = launchBlockers.length;
+  ticketCount.textContent = generatedTickets.length;
+  evidenceCount.textContent = evidenceItems.length;
+}
+
+function renderLocalResult(fallback, note = "Local fallback preview. Start backend API for real package generation.") {
+  lastBackendResult = null;
+  lastExportCsv = {};
   const scoreValue = fallback.blockers.length >= 5 ? "62 / 100" : fallback.blockers.length >= 3 ? "70 / 100" : "82 / 100";
   const launch = fallback.blockers.length ? "Not launchable" : "Launchable with controls";
 
@@ -142,18 +221,16 @@ function analyze() {
   launchPosition.textContent = launch;
   heroStatus.textContent = launch;
   heroStatus.classList.toggle("blocked", fallback.blockers.length > 0);
-  scoreSummary.textContent = fallback.blockers.length
-    ? "The request can be translated into governed delivery work, but launch is blocked until missing approvals, platform checks, delivery evidence, and access controls are resolved."
-    : "The request appears controlled enough to proceed with standard evidence-backed approval gates.";
+  scoreSummary.textContent = note;
 
-  renderChips(fallback.platforms);
-  renderList(blockers, fallback.blockers);
-  renderList(tickets, fallback.tickets);
-  renderList(evidence, fallback.evidence);
+  renderChips(fallback.platforms || []);
+  renderList(blockers, fallback.blockers || []);
+  renderList(tickets, fallback.tickets || []);
+  renderList(evidence, fallback.evidence || []);
 
-  blockerCount.textContent = fallback.blockers.length;
-  ticketCount.textContent = fallback.tickets.length;
-  evidenceCount.textContent = fallback.evidence.length;
+  blockerCount.textContent = (fallback.blockers || []).length;
+  ticketCount.textContent = (fallback.tickets || []).length;
+  evidenceCount.textContent = (fallback.evidence || []).length;
 }
 
 function renderChips(items) {
@@ -188,16 +265,15 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function formatValue(value) {
+  return String(value)
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
 function downloadCsv(platform) {
-  const rows = [
-    ["Work Item Type", "Title", "Owner Role", "Risk Rating", "Legal Review Required", "Security Review Required", "Data Governance Required", "File Movement Required", "Launch Blocker"],
-    ...Array.from(tickets.children).map(li => {
-      const title = li.querySelector("strong")?.textContent || "Governed delivery work item";
-      const owner = li.textContent.replace(title, "").trim();
-      return ["Story", title, owner, "L4", "Yes", "Yes", "Yes", "Yes", "Yes"];
-    })
-  ];
-  const csv = rows.map(row => row.map(cell => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
+  const backendCsv = lastExportCsv[platform];
+  const csv = backendCsv || buildFallbackCsv();
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -207,6 +283,18 @@ function downloadCsv(platform) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+function buildFallbackCsv() {
+  const rows = [
+    ["Work Item Type", "Title", "Owner Role", "Risk Rating", "Legal Review Required", "Security Review Required", "Data Governance Required", "File Movement Required", "Launch Blocker"],
+    ...Array.from(tickets.children).map(li => {
+      const title = li.querySelector("strong")?.textContent || "Governed delivery work item";
+      const owner = li.textContent.replace(title, "").trim();
+      return ["Story", title, owner, "L4", "Yes", "Yes", "Yes", "Yes", "Yes"];
+    })
+  ];
+  return rows.map(row => row.map(cell => `"${String(cell).replaceAll('"', '""')}"`).join(",")).join("\n");
 }
 
 document.getElementById("load-file-mover").addEventListener("click", () => setDemo(demos.fileMover));
