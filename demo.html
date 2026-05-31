@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Demo — Intelligent Services</title>
+<meta name="description" content="Watch governed delivery in action: messy intake becomes a scorecard, ticket hierarchy, and evidence packet.">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700;900&family=Spline+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f5f0;--ink:#14130f;--muted:#36322a;--faint:#6a6356;--hint:#a39a86;
+    --line:#ddd6c8;--line-soft:#e4ddcf;--line-faint:#f1ede4;--surf:#fff;--surf2:#fdfcf9;
+    --violet:#6d4aff;--violet-d:#4733c7;--teal:#1296ad;--teal-d:#0d7d6a;--amber:#c98a1a;--amber-d:#9a5a08;--pink:#a8345a;
+    --sans:'Archivo',sans-serif;--serif:'Instrument Serif',serif;--mono:'Spline Sans Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--violet);color:#fff}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 40px}
+  @media(max-width:680px){.wrap{padding:0 20px}}
+  nav{position:sticky;top:0;z-index:100;background:rgba(247,245,240,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft)}
+  .nav-in{max-width:1000px;margin:0 auto;padding:14px 40px;display:flex;justify-content:space-between;align-items:center}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(120deg,var(--violet),var(--teal));box-shadow:0 0 14px rgba(109,74,255,.6)}
+  .nav-back{font-family:var(--mono);font-size:12px;color:var(--faint)}.nav-back:hover{color:var(--violet-d)}
+
+  header{padding:56px 0 32px}
+  .seclabel{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--hint);margin-bottom:14px}
+  h1{font-size:clamp(32px,5vw,52px);line-height:1.0;font-weight:900;letter-spacing:-.025em;margin-bottom:18px}
+  h1 em{font-family:var(--serif);font-weight:400;font-style:italic;letter-spacing:0;background:linear-gradient(110deg,var(--violet),var(--teal));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lede{font-size:18px;line-height:1.55;color:var(--muted);max-width:640px}
+
+  /* mode toggle */
+  .modes{display:flex;gap:8px;margin:28px 0 10px}
+  .mode{flex:1;border:1px solid var(--line);background:var(--surf);border-radius:10px;padding:14px 16px;cursor:pointer;transition:.16s}
+  .mode.on{border-color:transparent;background:linear-gradient(135deg,var(--violet),var(--teal));color:#fff;box-shadow:0 6px 18px -8px rgba(109,74,255,.5)}
+  .mode .mh{font-size:13px;font-weight:700;margin-bottom:3px}
+  .mode .ms{font-size:11.5px;color:var(--hint)}.mode.on .ms{color:rgba(255,255,255,.82)}
+
+  .badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-d);background:rgba(224,177,94,.14);border:1px solid rgba(224,177,94,.4);border-radius:6px;padding:6px 12px;margin-bottom:22px}
+
+  /* example picker */
+  .examples{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .ex{border:1px solid var(--line);background:var(--surf);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+  .ex:hover{border-color:#bdb5a4}
+  .ex.on{border-color:var(--violet);color:var(--violet-d);background:rgba(109,74,255,.05)}
+
+  .stage{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surf)}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid var(--line-soft);gap:12px;flex-wrap:wrap}
+  .stage-head .t{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--hint)}
+  .ctrl{display:flex;gap:8px}
+  .pbtn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1px solid var(--line);background:var(--surf2);color:var(--muted);border-radius:7px;padding:8px 15px;cursor:pointer;transition:.15s}
+  .pbtn:hover{border-color:var(--violet);color:var(--violet-d)}
+  .pbtn.primary{background:linear-gradient(110deg,var(--violet),var(--teal));color:#fff;border:none}
+  .pbtn:disabled{opacity:.5;cursor:default}
+  .prog{height:3px;background:var(--line-faint);position:relative;overflow:hidden}
+  .pf{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--teal));transition:width .25s linear}
+
+  .io{display:grid;grid-template-columns:1fr 1fr;min-height:420px}
+  @media(max-width:760px){.io{grid-template-columns:1fr}}
+  .in{border-right:1px solid var(--line-soft);padding:18px 20px}
+  @media(max-width:760px){.in{border-right:none;border-bottom:1px solid var(--line-soft)}}
+  .out{padding:18px 20px;background:var(--surf2)}
+  .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--hint);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .lbl .d{width:6px;height:6px;border-radius:50%}.d-in{background:var(--amber)}.d-out{background:var(--teal)}
+
+  textarea{width:100%;min-height:300px;border:1px solid var(--line);border-radius:10px;padding:14px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);background:var(--surf);resize:vertical;transition:.15s}
+  textarea:focus{outline:none;border-color:var(--violet)}
+  .inhint{font-size:11.5px;color:var(--hint);margin-top:10px;line-height:1.5}
+
+  .empty{color:#b8b0a0;font-size:13px;font-style:italic;padding:60px 20px;text-align:center}
+
+  /* scorecard output */
+  .scard{opacity:0;transform:translateY(8px);transition:.45s}.scard.show{opacity:1;transform:none}
+  .score-top{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--line-soft);border-radius:11px;background:var(--surf);margin-bottom:12px}
+  .score-num{font-size:38px;font-weight:900;letter-spacing:-.02em;line-height:1;background:linear-gradient(110deg,var(--violet),var(--teal));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .score-meta .band{font-size:13px;font-weight:700}
+  .score-meta .pos{font-family:var(--mono);font-size:11px;margin-top:3px}
+  .pos.bad{color:var(--pink)}.pos.ok{color:var(--teal-d)}
+
+  .obox{border:1px solid var(--line-soft);border-radius:10px;padding:13px 15px;margin-bottom:10px;background:var(--surf);opacity:0;transform:translateY(6px);transition:.4s}
+  .obox.show{opacity:1;transform:none}
+  .obox .ol{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--hint);margin-bottom:9px;display:flex;justify-content:space-between}
+  .obox .ol .cnt{color:var(--pink)}
+  .brow{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--muted);line-height:1.4;padding:6px 0;border-bottom:1px solid var(--line-faint)}
+  .brow:last-child{border-bottom:none}
+  .brow .bx{flex-shrink:0;width:15px;height:15px;margin-top:2px}.brow .bx svg{width:15px;height:15px;fill:none;stroke-width:2;stroke:var(--pink)}
+  .brow b{color:var(--ink)}
+  .brow .role{font-family:var(--mono);font-size:10px;color:var(--teal-d);margin-top:3px}
+  .tk{display:flex;gap:8px;align-items:center;font-size:12px;padding:5px 0;color:var(--muted)}
+  .tk .tid{font-family:var(--mono);font-size:10px;color:var(--violet-d);flex-shrink:0;width:84px}
+  .ev{font-family:var(--mono);font-size:11px;color:var(--teal-d);background:rgba(31,182,201,.07);border:1px solid rgba(31,182,201,.3);border-radius:5px;padding:4px 9px;display:inline-block;margin:3px 4px 0 0}
+
+  /* gated state for live mode */
+  .gated{border:1px dashed var(--line);border-radius:11px;padding:22px;text-align:center;background:rgba(109,74,255,.03);opacity:0;transform:translateY(6px);transition:.4s}
+  .gated.show{opacity:1;transform:none}
+  .gated .gh{font-size:14px;font-weight:700;margin-bottom:7px}
+  .gated .gt{font-size:12.5px;color:var(--faint);line-height:1.5;max-width:340px;margin:0 auto 14px}
+  .gated .gt b{color:var(--ink)}
+  .gated a{font-family:var(--mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--violet-d);border:1px solid var(--violet);border-radius:7px;padding:8px 14px;display:inline-block}
+
+  footer{border-top:1px solid var(--line-soft);padding:36px 0 50px;text-align:center;margin-top:50px}
+  footer p{font-family:var(--mono);font-size:12px;color:var(--faint);line-height:1.9}
+  footer a:hover{color:var(--violet-d)}
+</style>
+</head>
+<body>
+<nav><div class="nav-in"><div class="brand"><span class="dot"></span>Intelligent Services</div><a class="nav-back" href="index.html">&larr; Back to overview</a></div></nav>
+
+<header><div class="wrap">
+  <div class="seclabel">// Free demo</div>
+  <h1>Watch messy intake become a <em>governed package.</em></h1>
+  <p class="lede">Run a prepared example to see the full pipeline — scorecard, launch blockers, ticket hierarchy, evidence packet. Or paste your own intake to preview how it'd be read.</p>
+</div></header>
+
+<div class="wrap">
+  <div class="modes">
+    <div class="mode on" data-mode="walk"><div class="mh">▶ Run a prepared example</div><div class="ms">Full pipeline, works instantly</div></div>
+    <div class="mode" data-mode="live"><div class="mh">✎ Paste your own intake</div><div class="ms">Preview how it'd be read</div></div>
+  </div>
+
+  <div id="walkBadge" class="badge"><span>●</span> Prepared example · illustrative output, not live processing</div>
+  <div id="liveBadge" class="badge" style="display:none"><span>●</span> Preview mode · the live engine runs in the repo CLI</div>
+
+  <div class="examples" id="examples">
+    <div class="ex on" data-ex="0">Healthcare file-mover delivery</div>
+    <div class="ex" data-ex="1">Platform stack governance</div>
+  </div>
+
+  <div class="stage">
+    <div class="stage-head"><span class="t" id="stitle">Governed delivery package</span><div class="ctrl"><button class="pbtn" id="reset">↺ Reset</button><button class="pbtn primary" id="run">▶ Run</button></div></div>
+    <div class="prog"><div class="pf" id="pf"></div></div>
+    <div class="io">
+      <div class="in">
+        <div class="lbl"><span class="d d-in"></span><span id="inlbl">Messy intake</span></div>
+        <textarea id="intake" spellcheck="false"></textarea>
+        <div class="inhint" id="inhint"></div>
+      </div>
+      <div class="out">
+        <div class="lbl"><span class="d d-out"></span>Generated package</div>
+        <div class="empty" id="empty">Press Run to generate the governed package…</div>
+        <div id="built"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer><div class="wrap"><p>Intelligent Services · <a href="https://github.com/Rando2020/Intelligent_Services">View the repository</a> · <a href="mailto:josiahparve@gmail.com">josiahparve@gmail.com</a></p></div></footer>
+
+<script>
+const EXAMPLES=[
+ {title:"Healthcare file-mover delivery",
+  intake:"New payer wants weekly eligibility + claims files.\nFiles include member DOB, plan ID, partial SSN, medication history.\nKyle set up the SFTP but he left — not sure who owns it now.\nWe just send to whatever address is in the spreadsheet.\nNo test run, we go straight to prod. Last quarter it broke twice.",
+  hint:"A real intake note: PHI present, unclear ownership, manual routing, no test delivery.",
+  score:49, band:"Restricted / remediation required", pos:"Not launchable", posbad:true,
+  blockers:[
+    ["Permitted-use / Legal approval not confirmed","Legal / Privacy"],
+    ["Delivery destination not verified","Implementation / Operations"],
+    ["No production-equivalent test delivery","QA / Platform Operations"]
+  ],
+  tickets:[["PAYOPS-101","Classify file fields (PHI/PII) + retention"],["PAYOPS-102","Replace manual routing with approved allowlist"],["PAYOPS-103","Define data owner for SFTP delivery"],["PAYOPS-104","Run production-equivalent test delivery + capture evidence"]],
+  evidence:["legal_approval","destination_allowlist","test_delivery_log","runbook"]},
+ {title:"Platform stack governance",
+  intake:"Pipeline: Snowflake -> dbt -> SFTP -> Tableau + Power BI -> partner API.\nMember-level data flows through all of it.\ndbt models transform PHI but no masking in non-prod.\nDashboards shared broadly. API has a key in plaintext config.",
+  hint:"Engineers name their tools; the system maps each to required controls.",
+  score:52, band:"Restricted / remediation required", pos:"Not launchable", posbad:true,
+  blockers:[
+    ["PHI unmasked in non-production dbt environments","Data Engineering"],
+    ["API credential stored in plaintext","Security"],
+    ["Dashboard access not scoped to need-to-know","Data Owner"]
+  ],
+  tickets:[["STACK-201","Add masking to dbt non-prod models"],["STACK-202","Move API key to secrets manager"],["STACK-203","Scope Tableau/Power BI access to need-to-know"],["STACK-204","Document lineage Snowflake -> API with controls per hop"]],
+  evidence:["masking_policy","secret_rotation_log","access_review","lineage_map"]}
+];
+let mode='walk', curEx=0, timers=[];
+const $=id=>document.getElementById(id);
+function clr(){timers.forEach(t=>t.clear?t.clear():clearTimeout(t));timers=[];}
+function T(fn,ms){timers.push(setTimeout(fn,ms));}
+function load(){const e=EXAMPLES[curEx];$('intake').value=e.intake;$('inhint').textContent=mode==='walk'?e.hint:'Paste or edit freely — preview mode reads structure, the live engine runs in the repo.';$('stitle').textContent=e.title+' · package';$('built').innerHTML='';$('empty').style.display='block';$('pf').style.width='0';$('run').disabled=false;$('run').innerHTML='▶ Run';}
+function run(){const e=EXAMPLES[curEx];$('built').innerHTML='';$('empty').style.display='none';$('run').disabled=true;$('run').innerHTML='● Running';let p=0;const pi=setInterval(()=>{p+=3;$('pf').style.width=Math.min(p,100)+'%';if(p>=100)clearInterval(pi);},90);timers.push({clear:()=>clearInterval(pi)});
+ if(mode==='live'){T(()=>{$('built').innerHTML='<div class="gated" id="g"><div class="gh">Preview only — connect the live engine to process this</div><div class="gt">This page reads your intake’s <b>structure</b> to preview the flow. The <b>actual scoring engine</b> runs in the repo CLI today, and can be wired to a hosted backend for true live processing.</div><a href="https://github.com/Rando2020/Intelligent_Services">See how it runs →</a></div>';T(()=>$('g').classList.add('show'),40);$('run').disabled=false;$('run').innerHTML='▶ Run again';},700);return;}
+ // walkthrough: build the real prepared output
+ T(()=>{let h='<div class="scard" id="sc">';
+   h+='<div class="score-top"><div class="score-num">'+e.score+'</div><div class="score-meta"><div class="band">'+e.band+'</div><div class="pos '+(e.posbad?'bad':'ok')+'">'+e.pos+'</div></div></div>';
+   h+='<div class="obox" data-o="0"><div class="ol"><span>⚑ Launch blockers</span><span class="cnt">'+e.blockers.length+' open</span></div>';
+   e.blockers.forEach(b=>h+='<div class="brow"><span class="bx"><svg viewBox="0 0 24 24"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M12 9v4M12 16h.01"/></svg></span><span><b>'+b[0]+'</b><div class="role">→ '+b[1]+'</div></span></div>');
+   h+='</div>';
+   h+='<div class="obox" data-o="1"><div class="ol"><span>▦ Generated ticket hierarchy</span></div>';
+   e.tickets.forEach(t=>h+='<div class="tk"><span class="tid">'+t[0]+'</span><span>'+t[1]+'</span></div>');
+   h+='</div>';
+   h+='<div class="obox" data-o="2"><div class="ol"><span>✓ Evidence packet required</span></div><div>'+e.evidence.map(x=>'<span class="ev">'+x+'</span>').join('')+'</div></div>';
+   h+='</div>';
+   $('built').innerHTML=h;
+   T(()=>$('sc').classList.add('show'),30);
+   [0,1,2].forEach((o,i)=>T(()=>{const b=document.querySelector('.obox[data-o="'+o+'"]');if(b)b.classList.add('show');},250+i*400));
+   T(()=>{$('run').disabled=false;$('run').innerHTML='▶ Run again';},250+3*400);
+ },750);}
+document.querySelectorAll('.mode').forEach(m=>m.addEventListener('click',()=>{document.querySelectorAll('.mode').forEach(x=>x.classList.remove('on'));m.classList.add('on');mode=m.dataset.mode;$('walkBadge').style.display=mode==='walk'?'inline-flex':'none';$('liveBadge').style.display=mode==='live'?'inline-flex':'none';$('inlbl').textContent=mode==='walk'?'Messy intake (example)':'Your intake';clr();load();}));
+document.querySelectorAll('.ex').forEach(x=>x.addEventListener('click',()=>{document.querySelectorAll('.ex').forEach(y=>y.classList.remove('on'));x.classList.add('on');curEx=+x.dataset.ex;clr();load();}));
+$('run').addEventListener('click',run);$('reset').addEventListener('click',()=>{clr();load();});
+load();
+</script>
+</body>
+</html>
