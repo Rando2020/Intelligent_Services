@@ -1,0 +1,142 @@
+{
+  "id": "NAMING-HEALTHCARE-DELIVERY-DEFAULT",
+  "name": "Healthcare Delivery Naming Convention Default",
+  "scope": "all",
+  "description": "Default naming governance pattern for healthcare delivery workflows where external contractual names may be locked by SOW/BAA while internal canonical naming must be standardized.",
+  "layers": [
+    {
+      "key": "external_contract_name",
+      "label": "External Contract Name",
+      "change_policy": "contract_locked",
+      "owner_role": "Legal / Sales / Client Success",
+      "notes": "Name agreed in BAA, SOW, order form, or client-facing documentation. Do not change without contract or client approval."
+    },
+    {
+      "key": "external_delivery_name",
+      "label": "External Delivery Name",
+      "change_policy": "controlled_change",
+      "owner_role": "Implementation / Client Success / Platform Operations",
+      "notes": "Name visible in SFTP, MFT, portal, report, API, or client-facing delivery layer. Must map back to the contract name."
+    },
+    {
+      "key": "internal_canonical_name",
+      "label": "Internal Canonical Name",
+      "change_policy": "internal_standard",
+      "owner_role": "Product / Data Governance / Implementation",
+      "notes": "Standard internal name used across Jira, Confluence, runbooks, datasets, configs, and operational reporting."
+    },
+    {
+      "key": "system_physical_name",
+      "label": "System Physical Name",
+      "change_policy": "controlled_change",
+      "owner_role": "Data Engineering / Platform Operations",
+      "notes": "Actual table, file, folder, route, job, report, or API path name. Must be traceable to canonical name."
+    },
+    {
+      "key": "legacy_alias",
+      "label": "Legacy Alias",
+      "change_policy": "deprecated",
+      "owner_role": "Product / Implementation",
+      "notes": "Prior name kept only for traceability, migration, or client history. Should not be used for new work."
+    }
+  ],
+  "patterns": [
+    {
+      "key": "internal_program_name",
+      "label": "Internal Program Name",
+      "pattern": "{client_code}_{program_code}_{line_of_business}_{year}",
+      "applies_to": ["program", "jira_label", "confluence_page", "runbook"],
+      "example": "CENTENE_LAMP_MEDICAID_2026",
+      "required_tokens": ["client_code", "program_code", "line_of_business", "year"],
+      "forbidden_tokens": ["spaces", "special_characters", "ambiguous_abbreviations"],
+      "max_length": 80,
+      "case_style": "upper_snake_case",
+      "delimiter": "_"
+    },
+    {
+      "key": "delivery_file_name",
+      "label": "Delivery File Name",
+      "pattern": "{external_client_code}_{program_code}_{file_type}_{frequency}_{yyyymmdd}.{extension}",
+      "applies_to": ["file", "sftp", "mft", "portal_upload"],
+      "example": "CNC_LAMP_OPPORTUNITY_WEEKLY_20260531.csv",
+      "required_tokens": ["external_client_code", "program_code", "file_type", "frequency", "yyyymmdd", "extension"],
+      "forbidden_tokens": ["phi_in_filename", "patient_name", "member_id", "free_text_description", "spaces"],
+      "max_length": 120,
+      "case_style": "upper_snake_case",
+      "delimiter": "_"
+    },
+    {
+      "key": "internal_dataset_name",
+      "label": "Internal Dataset Name",
+      "pattern": "{domain}_{client_code}_{program_code}_{dataset_purpose}_{grain}",
+      "applies_to": ["dataset", "table", "view", "model"],
+      "example": "pharmacy_centene_lamp_opportunity_member_week",
+      "required_tokens": ["domain", "client_code", "program_code", "dataset_purpose", "grain"],
+      "forbidden_tokens": ["client_marketing_name_only", "unclear_acronym", "date_without_context"],
+      "max_length": 120,
+      "case_style": "lower_snake_case",
+      "delimiter": "_"
+    },
+    {
+      "key": "delivery_route_name",
+      "label": "Delivery Route Name",
+      "pattern": "route_{external_client_code}_{program_code}_{direction}_{environment}",
+      "applies_to": ["route", "folder", "job", "mft", "sftp"],
+      "example": "route_CNC_LAMP_outbound_prod",
+      "required_tokens": ["external_client_code", "program_code", "direction", "environment"],
+      "forbidden_tokens": ["personal_names", "temporary", "test_in_prod", "ambiguous_client_alias"],
+      "max_length": 100,
+      "case_style": "mixed_safe_case",
+      "delimiter": "_"
+    }
+  ],
+  "mapping_rules": [
+    {
+      "source_layer": "external_contract_name",
+      "target_layer": "internal_canonical_name",
+      "rule": "Preserve external contract name as source-of-truth reference, then create internal canonical name using standard client/program/timeline tokens.",
+      "requires_approval": true,
+      "evidence_required": ["contract_name_reference", "canonical_name_mapping_record", "product_owner_approval"]
+    },
+    {
+      "source_layer": "internal_canonical_name",
+      "target_layer": "external_delivery_name",
+      "rule": "External delivery name may follow client-required naming if it is mapped back to internal canonical name and approved destination/route.",
+      "requires_approval": true,
+      "evidence_required": ["client_delivery_naming_requirement", "delivery_name_mapping_record", "route_config_review"]
+    },
+    {
+      "source_layer": "external_delivery_name",
+      "target_layer": "system_physical_name",
+      "rule": "Physical folders, routes, jobs, files, and reports must not rely only on ambiguous client aliases. They must include enough tokens to distinguish client, program, direction, environment, and cadence.",
+      "requires_approval": true,
+      "evidence_required": ["system_name_review", "environment_review", "route_config_review"]
+    }
+  ],
+  "approval_rules": [
+    {
+      "trigger": "external_contract_name_change",
+      "owner_role": "Legal / Client Success",
+      "required_evidence": ["contract_amendment_or_client_approval", "updated_mapping_record"],
+      "launch_blocker": true
+    },
+    {
+      "trigger": "external_delivery_name_change",
+      "owner_role": "Implementation / Client Success / Platform Operations",
+      "required_evidence": ["client_delivery_approval", "route_config_review", "test_delivery_log"],
+      "launch_blocker": true
+    },
+    {
+      "trigger": "internal_canonical_name_change",
+      "owner_role": "Product / Data Governance",
+      "required_evidence": ["canonical_name_mapping_record", "downstream_impact_review"],
+      "launch_blocker": false
+    },
+    {
+      "trigger": "physical_route_or_file_name_change",
+      "owner_role": "Data Engineering / Platform Operations / QA",
+      "required_evidence": ["route_config_review", "test_delivery_log", "monitoring_update"],
+      "launch_blocker": true
+    }
+  ]
+}
