@@ -74,5 +74,35 @@
       "owner_role": "Project Manager / Product Manager",
       "purpose": "Confirm the launch plan is based on completed controls rather than target-date pressure."
     }
+  },
+  {
+    "id": "GOV-DELIVERY-004",
+    "name": "Sparse healthcare product intake requires discovery before readiness",
+    "category": "intake_quality",
+    "severity": "critical",
+    "applies_when": {
+      "all": [
+        {"field": "data_types", "contains_any": ["claims", "eligibility", "medication", "phi", "pii"]},
+        {"field": "unknowns", "min_length": 5}
+      ]
+    },
+    "finding": "Healthcare product intake references regulated data but does not provide enough governance, delivery, approval, owner, platform, QA, or evidence detail to be considered launch-ready.",
+    "required_action": "Run discovery before implementation planning: identify owner, business purpose, permitted use, field list, source systems, destination, delivery method, access model, QA approach, evidence requirements, and launch approval path.",
+    "launch_blocker": true,
+    "required_evidence": [
+      "intake_discovery_packet",
+      "business_purpose_statement",
+      "approved_field_list",
+      "source_system_inventory",
+      "data_owner_confirmation",
+      "security_review",
+      "qa_strategy",
+      "launch_approval_path"
+    ],
+    "recommended_ticket": {
+      "title": "Complete discovery for sparse regulated healthcare product intake",
+      "owner_role": "Product / Implementation / Data Governance",
+      "purpose": "Turn vague healthcare product intake into an actionable governed delivery plan before readiness scoring or sprint execution."
+    }
   }
 ]
