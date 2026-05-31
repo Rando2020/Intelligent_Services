@@ -35,6 +35,7 @@ def test_governed_delivery_package_generation(tmp_path):
     assert "YAML rule controls injected into package" in result.stdout
     assert "Additional platform exports generated" in result.stdout
     assert "Platform profile outputs generated" in result.stdout
+    assert "Workflow diagram outputs generated" in result.stdout
 
     expected_files = [
         "normalized_intake.json",
@@ -44,6 +45,10 @@ def test_governed_delivery_package_generation(tmp_path):
         "rule_match_report.md",
         "generated_ticket_hierarchy.json",
         "generated_ticket_hierarchy.md",
+        "workflow_diagram.json",
+        "workflow_diagram.md",
+        "workflow_diagram.mmd",
+        "workflow_diagram.drawio.xml",
         "jira_export.csv",
         "ado_export.csv",
         "rally_export.csv",
@@ -81,6 +86,15 @@ def test_governed_delivery_package_generation(tmp_path):
         profile["id"] == "PLATFORM-GENERIC-FILE-MOVER"
         for profile in platform_report["detected_profiles"]
     )
+
+    workflow = json.loads((output_dir / "workflow_diagram.json").read_text(encoding="utf-8"))
+    assert workflow["title"] == "Centene LAMP Governed File Delivery"
+    assert workflow["nodes"]
+    assert workflow["edges"]
+    assert "mermaid" in workflow["exports"]
+    assert "drawio_xml" in workflow["exports"]
+    assert "flowchart LR" in (output_dir / "workflow_diagram.mmd").read_text(encoding="utf-8")
+    assert "<mxfile>" in (output_dir / "workflow_diagram.drawio.xml").read_text(encoding="utf-8")
 
     tickets = json.loads((output_dir / "generated_ticket_hierarchy.json").read_text(encoding="utf-8"))
     assert len(tickets) >= 10
