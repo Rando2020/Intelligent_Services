@@ -4,8 +4,8 @@ Generate the complete governed delivery demo package.
 
 This wrapper runs the core governed_delivery_cli pipeline, generates a YAML
 rule match report, injects rule-driven controls, generates a platform control
-profile report, injects platform-specific tickets/evidence, and then adds Jira,
-ADO, Rally, and Asana CSV exports.
+profile report, injects platform-specific tickets/evidence, creates workflow
+visualization outputs, and then adds Jira, ADO, Rally, and Asana CSV exports.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from platform_profile_augmenter import augment_package as augment_with_platform_
 from platform_profile_detector import write_platform_report
 from rule_loader import write_rule_report_from_files
 from rule_match_augmenter import augment_package as augment_with_rule_matches
+from workflow_diagram_generator import write_workflow_outputs
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +28,7 @@ DEFAULT_PROFILE_DIR = REPO_ROOT / "platform_profiles"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate governed delivery scorecards, rule matches, platform profiles, ticket hierarchy, evidence packet, and exports."
+        description="Generate governed delivery scorecards, rule matches, platform profiles, ticket hierarchy, workflow diagrams, evidence packet, and exports."
     )
     parser.add_argument(
         "--input",
@@ -65,6 +66,7 @@ def main() -> None:
     platform_outputs = write_platform_report(input_path, output_dir, Path(args.profile_dir))
     platform_augmented_outputs = augment_with_platform_profiles(output_dir)
 
+    workflow_outputs = write_workflow_outputs(output_dir, title=args.title)
     extra_exports = write_all_platform_exports(output_dir)
 
     print("YAML rule match outputs generated:")
@@ -84,6 +86,10 @@ def main() -> None:
         print("Platform profile controls injected into package:")
         for path in platform_augmented_outputs:
             print(f"- {path}")
+
+    print("Workflow diagram outputs generated:")
+    for path in workflow_outputs:
+        print(f"- {path}")
 
     print("Additional platform exports generated:")
     for path in extra_exports:
