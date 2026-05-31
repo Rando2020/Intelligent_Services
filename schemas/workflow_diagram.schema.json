@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/workflow_diagram.schema.json",
+  "title": "Governed Workflow Diagram Schema",
+  "description": "Schema for Visio-like governed workflow diagrams generated from intake, rules, platform profiles, tickets, and evidence.",
+  "type": "object",
+  "required": ["id", "title", "orientation", "lanes", "nodes", "edges", "exports"],
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "orientation": {"type": "string", "enum": ["LR", "TB"]},
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "owner_role": {"type": "string"}
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type", "lane"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "type": {
+            "type": "string",
+            "enum": ["start", "process", "decision", "control", "evidence", "system", "export", "blocked", "end"]
+          },
+          "lane": {"type": "string"},
+          "description": {"type": "string"},
+          "risk_level": {"type": "string"},
+          "source_rule_id": {"type": "string"},
+          "source_profile_id": {"type": "string"},
+          "launch_blocker": {"type": "boolean"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": {"type": "string"},
+          "to": {"type": "string"},
+          "label": {"type": "string"},
+          "condition": {"type": "string"}
+        }
+      }
+    },
+    "exports": {
+      "type": "object",
+      "properties": {
+        "mermaid": {"type": "string"},
+        "drawio_xml": {"type": "string"},
+        "markdown": {"type": "string"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
