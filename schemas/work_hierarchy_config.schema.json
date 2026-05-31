@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/work_hierarchy_config.schema.json",
+  "title": "Work Hierarchy Configuration Schema",
+  "description": "Schema for organization-specific work item hierarchy, allowed parent-child relationships, dependency types, and export behavior.",
+  "type": "object",
+  "required": ["id", "name", "platform", "levels", "allowed_relationships", "dependency_types"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "platform": {
+      "type": "string",
+      "enum": ["jira", "ado", "rally", "asana", "generic", "custom"]
+    },
+    "description": {"type": "string"},
+    "levels": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "order", "enabled"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "order": {"type": "integer"},
+          "enabled": {"type": "boolean"},
+          "maps_to": {"type": "string"},
+          "description": {"type": "string"},
+          "required_fields": {"type": "array", "items": {"type": "string"}},
+          "optional_fields": {"type": "array", "items": {"type": "string"}},
+          "can_have_children": {"type": "boolean"},
+          "can_be_exported": {"type": "boolean"}
+        }
+      }
+    },
+    "allowed_relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["parent", "child"],
+        "properties": {
+          "parent": {"type": "string"},
+          "child": {"type": "string"},
+          "enabled": {"type": "boolean"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "dependency_types": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "direction"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "direction": {"type": "string", "enum": ["incoming", "outgoing", "bidirectional"]},
+          "description": {"type": "string"},
+          "blocks_schedule": {"type": "boolean"}
+        }
+      }
+    },
+    "export_behavior": {
+      "type": "object",
+      "properties": {
+        "flatten_unsupported_levels": {"type": "boolean"},
+        "unsupported_level_strategy": {"type": "string", "enum": ["flatten_to_parent", "flatten_to_story", "convert_to_label", "omit"]},
+        "preserve_original_hierarchy_fields": {"type": "boolean"},
+        "include_dependency_columns": {"type": "boolean"},
+        "include_gantt_columns": {"type": "boolean"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
