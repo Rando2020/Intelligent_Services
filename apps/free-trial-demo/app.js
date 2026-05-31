@@ -189,8 +189,8 @@ function renderBackendResult(result) {
   const scoreValue = `${summary.overall_score ?? "N/A"} / 100`;
   const launch = formatValue(summary.launch_position || "unknown");
   const launchBlockers = result.scorecard?.launch_blockers || [];
-  const generatedTickets = result.tickets || [];
-  const evidenceItems = result.evidence_packet?.evidence_items || [];
+  const generatedTickets = result.prioritized_tickets || prioritizeTicketsForDisplay(result.tickets || []);
+  const evidenceItems = prioritizeEvidenceForDisplay(result.evidence_packet?.evidence_items || []);
   const profiles = result.platform_profile_report?.detected_profiles || [];
 
   score.textContent = scoreValue;
@@ -198,16 +198,55 @@ function renderBackendResult(result) {
   launchPosition.textContent = launch;
   heroStatus.textContent = launch;
   heroStatus.classList.toggle("blocked", launchBlockers.length > 0);
-  scoreSummary.textContent = `Backend result. Matched rules: ${summary.matched_rule_count || 0}. Detected platforms: ${summary.detected_platform_count || 0}. Generated tickets: ${summary.ticket_count || generatedTickets.length}.`;
+  scoreSummary.textContent = `${summary.display_score_explanation || "Backend result."} Engine score: ${summary.engine_score ?? "N/A"}. Generated tickets: ${summary.ticket_count || generatedTickets.length}.`;
 
   renderChips(profiles.map(profile => `${profile.name} (${profile.suggested_current_level || "L0"})`));
   renderList(blockers, launchBlockers.map(item => [item.blocker, item.required_resolution || item.owner_role || "Resolution required"]));
-  renderList(tickets, generatedTickets.slice(0, 18).map(item => [item.title, item.owner_role || item.work_item_type || "TBD"]));
+  renderList(tickets, generatedTickets.slice(0, 18).map(item => [formatTicketTitle(item), formatTicketBody(item)]));
   renderList(evidence, evidenceItems.slice(0, 18).map(item => [item.required_artifact, item.owner_role || item.evidence_area || "Evidence owner TBD"]));
 
   blockerCount.textContent = launchBlockers.length;
   ticketCount.textContent = generatedTickets.length;
   evidenceCount.textContent = evidenceItems.length;
+}
+
+function prioritizeTicketsForDisplay(ticketItems) {
+  return [...ticketItems].sort((a, b) => ticketPriority(a) - ticketPriority(b) || String(a.title || "").localeCompare(String(b.title || "")));
+}
+
+function ticketPriority(ticket) {
+  if (ticket.source_rule_id) return 0;
+  if (ticket.parent_external_id === "EPIC-PLATFORM-001") return 1;
+  if (ticket.title === "Platform Control Profile Governance") return 1;
+  if (ticket.launch_blocker) return 2;
+  if (["initiative", "epic"].includes(ticket.work_item_type)) return 4;
+  return 3;
+}
+
+function prioritizeEvidenceForDisplay(evidenceItems) {
+  return [...evidenceItems].sort((a, b) => evidencePriority(a) - evidencePriority(b) || String(a.required_artifact || "").localeCompare(String(b.required_artifact || "")));
+}
+
+function evidencePriority(item) {
+  const area = String(item.evidence_area || "");
+  if (area.startsWith("Matched rule:")) return 0;
+  if (area.startsWith("Platform profile:")) return 1;
+  if (item.launch_blocker) return 2;
+  return 3;
+}
+
+function formatTicketTitle(ticket) {
+  const prefix = ticket.source_rule_id ? `[${ticket.source_rule_id}] ` : "";
+  return `${prefix}${ticket.title || "Generated work item"}`;
+}
+
+function formatTicketBody(ticket) {
+  const labels = [];
+  if (ticket.owner_role) labels.push(ticket.owner_role);
+  if (ticket.parent_external_id === "EPIC-PLATFORM-001") labels.push("platform profile");
+  if (ticket.source_rule_id) labels.push("rule-driven");
+  if (ticket.launch_blocker) labels.push("launch blocker");
+  return labels.join(" • ") || ticket.work_item_type || "TBD";
 }
 
 function renderLocalResult(fallback, note = "Local fallback preview. Start backend API for real package generation.") {
