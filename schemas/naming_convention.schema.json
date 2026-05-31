@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/naming_convention.schema.json",
+  "title": "Naming Convention Governance Schema",
+  "description": "Schema for managing internal canonical names, external contractual names, aliases, and transfer-safe file naming conventions.",
+  "type": "object",
+  "required": ["id", "name", "scope", "layers", "patterns", "mapping_rules", "approval_rules"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "scope": {
+      "type": "string",
+      "enum": ["client", "program", "file", "dataset", "table", "field", "folder", "route", "report", "api", "all"]
+    },
+    "description": {"type": "string"},
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "change_policy"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "change_policy": {
+            "type": "string",
+            "enum": ["contract_locked", "controlled_change", "internal_standard", "generated_alias", "deprecated"]
+          },
+          "owner_role": {"type": "string"},
+          "notes": {"type": "string"}
+        }
+      }
+    },
+    "patterns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "pattern", "applies_to"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "pattern": {"type": "string"},
+          "applies_to": {"type": "array", "items": {"type": "string"}},
+          "example": {"type": "string"},
+          "required_tokens": {"type": "array", "items": {"type": "string"}},
+          "forbidden_tokens": {"type": "array", "items": {"type": "string"}},
+          "max_length": {"type": "integer"},
+          "case_style": {"type": "string"},
+          "delimiter": {"type": "string"}
+        }
+      }
+    },
+    "mapping_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_layer", "target_layer", "rule"],
+        "properties": {
+          "source_layer": {"type": "string"},
+          "target_layer": {"type": "string"},
+          "rule": {"type": "string"},
+          "requires_approval": {"type": "boolean"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "approval_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["trigger", "owner_role", "required_evidence"],
+        "properties": {
+          "trigger": {"type": "string"},
+          "owner_role": {"type": "string"},
+          "required_evidence": {"type": "array", "items": {"type": "string"}},
+          "launch_blocker": {"type": "boolean"}
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}
