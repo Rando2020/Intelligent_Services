@@ -1,0 +1,49 @@
+{
+  "id": "WORK-HIERARCHY-STORY-TASK-ONLY",
+  "name": "Story and Task Only Hierarchy",
+  "platform": "custom",
+  "description": "Minimal hierarchy for organizations or project configurations that do not support initiatives, epics, or sub-tasks.",
+  "levels": [
+    {
+      "key": "story",
+      "label": "Story",
+      "order": 1,
+      "enabled": true,
+      "maps_to": "Story",
+      "description": "Primary work item used for governed delivery output.",
+      "required_fields": ["summary", "description", "acceptance_criteria"],
+      "optional_fields": ["owner_role", "risk_rating", "evidence_required", "dependency_ids"],
+      "can_have_children": true,
+      "can_be_exported": true
+    },
+    {
+      "key": "task",
+      "label": "Task",
+      "order": 2,
+      "enabled": true,
+      "maps_to": "Task",
+      "description": "Supporting work item for implementation, QA, governance, evidence, and launch readiness.",
+      "required_fields": ["summary", "description"],
+      "optional_fields": ["owner_role", "risk_rating", "evidence_required", "dependency_ids"],
+      "can_have_children": false,
+      "can_be_exported": true
+    }
+  ],
+  "allowed_relationships": [
+    {"parent": "story", "child": "task", "enabled": true},
+    {"parent": "task", "child": "task", "enabled": false, "notes": "Task-to-task relationships should be modeled as dependencies instead of hierarchy."}
+  ],
+  "dependency_types": [
+    {"key": "blocks", "label": "Blocks", "direction": "outgoing", "description": "This item blocks another item.", "blocks_schedule": true},
+    {"key": "blocked_by", "label": "Blocked By", "direction": "incoming", "description": "This item cannot start or finish until another item is complete.", "blocks_schedule": true},
+    {"key": "relates_to", "label": "Relates To", "direction": "bidirectional", "description": "Related work but not schedule-blocking.", "blocks_schedule": false},
+    {"key": "must_finish_before", "label": "Must Finish Before", "direction": "outgoing", "description": "Finish-to-start dependency for Gantt planning.", "blocks_schedule": true}
+  ],
+  "export_behavior": {
+    "flatten_unsupported_levels": true,
+    "unsupported_level_strategy": "flatten_to_story",
+    "preserve_original_hierarchy_fields": true,
+    "include_dependency_columns": true,
+    "include_gantt_columns": true
+  }
+}
