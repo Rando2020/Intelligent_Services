@@ -29,6 +29,24 @@ def test_backend_demo_api_analyze_returns_generated_package():
     assert result["platform_profile_report"]["detected_platform_count"] >= 5
 
 
+def test_sparse_pharmacy_claims_eligibility_intake_is_not_false_ready():
+    payload = {
+        "title": "Sparse Healthcare Intake Test",
+        "intake": "we need to launch a pharmacy product. We are taking in eligibility and claims data",
+    }
+
+    result = server.analyze(payload)
+    matched_rule_ids = {rule["id"] for rule in result["rule_match_report"]["matched_rules"]}
+    prioritized_ticket_titles = [ticket["title"] for ticket in result.get("prioritized_tickets", [])]
+
+    assert result["summary"]["overall_rating"] == "at_risk"
+    assert result["summary"]["launch_position"] == "not_launchable"
+    assert result["summary"]["overall_score"] <= 64
+    assert "GOV-DELIVERY-004" in matched_rule_ids
+    assert "Complete discovery for sparse regulated healthcare product intake" in prioritized_ticket_titles
+    assert result["summary"]["detected_platform_count"] == 0
+
+
 def test_backend_demo_api_rejects_empty_intake():
     try:
         server.analyze({"intake": ""})
