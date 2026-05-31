@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/gantt_plan.schema.json",
+  "title": "Governed Gantt Plan Schema",
+  "description": "Schema for timeline and dependency planning generated from governed delivery work items.",
+  "type": "object",
+  "required": ["id", "title", "time_unit", "items", "dependencies", "critical_path"],
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "time_unit": {"type": "string", "enum": ["days", "weeks", "sprints", "months"]},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "work_item_type", "owner_role", "duration", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "work_item_type": {"type": "string"},
+          "owner_role": {"type": "string"},
+          "duration": {"type": "number"},
+          "start_offset": {"type": "number"},
+          "end_offset": {"type": "number"},
+          "status": {"type": "string"},
+          "risk_rating": {"type": "string"},
+          "launch_blocker": {"type": "boolean"},
+          "evidence_required": {"type": "array", "items": {"type": "string"}},
+          "dependencies": {"type": "array", "items": {"type": "string"}},
+          "can_parallelize": {"type": "boolean"}
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to", "type"],
+        "properties": {
+          "from": {"type": "string"},
+          "to": {"type": "string"},
+          "type": {"type": "string"},
+          "blocks_schedule": {"type": "boolean"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "critical_path": {"type": "array", "items": {"type": "string"}},
+    "exports": {
+      "type": "object",
+      "properties": {
+        "mermaid_gantt": {"type": "string"},
+        "csv": {"type": "string"},
+        "markdown": {"type": "string"}
+      }
+    }
+  },
+  "additionalProperties": true
+}
