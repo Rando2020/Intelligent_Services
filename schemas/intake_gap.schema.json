@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Rando2020/Intelligent_Services/schemas/intake_gap.schema.json",
+  "title": "Intake Gap Schema",
+  "description": "Schema for capturing missing, unclear, contradictory, or unsafe intake details that must be resolved before planning, implementation, documentation, or launch.",
+  "type": "object",
+  "required": ["id", "title", "gap_type", "severity", "source_stage", "detected_from", "why_it_matters", "required_resolution", "owner_role", "status"],
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string"},
+    "gap_type": {
+      "type": "string",
+      "enum": [
+        "missing_information",
+        "ambiguous_requirement",
+        "contradiction",
+        "naming_gap",
+        "governance_gap",
+        "approval_gap",
+        "platform_gap",
+        "delivery_gap",
+        "dependency_gap",
+        "timeline_gap",
+        "documentation_gap",
+        "feedback_gap"
+      ]
+    },
+    "severity": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "source_stage": {
+      "type": "string",
+      "enum": [
+        "sales",
+        "client_success",
+        "data_governance",
+        "product",
+        "project_management",
+        "implementation",
+        "data_engineering",
+        "qa",
+        "delivery",
+        "support",
+        "documentation",
+        "post_launch"
+      ]
+    },
+    "detected_from": {"type": "string"},
+    "why_it_matters": {"type": "string"},
+    "compromised_if_ignored": {"type": "array", "items": {"type": "string"}},
+    "required_resolution": {"type": "string"},
+    "owner_role": {"type": "string"},
+    "supporting_questions": {"type": "array", "items": {"type": "string"}},
+    "evidence_required": {"type": "array", "items": {"type": "string"}},
+    "related_rule_ids": {"type": "array", "items": {"type": "string"}},
+    "related_profile_ids": {"type": "array", "items": {"type": "string"}},
+    "related_ticket_ids": {"type": "array", "items": {"type": "string"}},
+    "should_feed_back_to": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["sales", "client_success", "product", "project_management", "implementation", "data_governance", "legal", "security", "engineering", "qa", "support", "documentation"]
+      }
+    },
+    "status": {"type": "string", "enum": ["open", "answered", "accepted_risk", "not_applicable", "closed"]},
+    "resolution_notes": {"type": "string"}
+  },
+  "additionalProperties": true
+}
