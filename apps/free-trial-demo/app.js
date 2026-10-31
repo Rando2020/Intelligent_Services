@@ -70,6 +70,8 @@ The team wants to move quickly because leadership already shared the August 15 t
 let current = demos.platformStack;
 let lastBackendResult = null;
 let lastExportCsv = {};
+let analysisGeneration = 0;
+let analysisPending = false;
 
 const intake = document.getElementById("intake");
 const score = document.getElementById("score");
@@ -138,7 +140,12 @@ function buildFallback(text) {
 }
 
 async function analyze() {
+  const generation = ++analysisGeneration;
   const text = intake.value.trim();
+  const demo = current;
+  lastBackendResult = null;
+  lastExportCsv = {};
+  setAnalysisPending(Boolean(text));
   if (!text) {
     renderLocalResult({ platforms: [], blockers: [], tickets: [], evidence: [], source: "empty" });
     return;
@@ -152,11 +159,22 @@ async function analyze() {
 
   try {
     const result = await callBackend(text);
+    if (generation !== analysisGeneration) return;
+    setAnalysisPending(false);
     renderBackendResult(result);
   } catch (error) {
-    const fallback = text === current.intake.trim() ? { ...current, source: "local fallback" } : buildFallback(text);
+    if (generation !== analysisGeneration) return;
+    setAnalysisPending(false);
+    const fallback = text === demo.intake.trim() ? { ...demo, source: "local fallback" } : buildFallback(text);
     renderLocalResult(fallback, `Backend unavailable, using local fallback. ${error.message || error}`);
   }
+}
+
+function setAnalysisPending(pending) {
+  analysisPending = pending;
+  document.querySelectorAll(".export").forEach(button => {
+    button.disabled = pending;
+  });
 }
 
 async function callBackend(text) {
@@ -311,6 +329,7 @@ function formatValue(value) {
 }
 
 function downloadCsv(platform) {
+  if (analysisPending) return;
   const backendCsv = lastExportCsv[platform];
   const csv = backendCsv || buildFallbackCsv();
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
